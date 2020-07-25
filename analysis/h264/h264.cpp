@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "h264.h"
+
 int main(int argc, char* argv[])
 {
 	std::cout << "h264 analysis" << std::endl;
@@ -19,9 +21,10 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
+	NALHEADER nalheader = { 0 };
 	unsigned char c = 0;
 	uint32_t datalen = 0;
-	int step = 0;//¼ÇÂ¼0x00µÄ¸öÊý
+	int step = 0;//è®°å½•0x00çš„ä¸ªæ•°
 	while (in.read(reinterpret_cast<char*>(&c), 1))
 	{
 		if (c == 0)
@@ -35,7 +38,13 @@ int main(int argc, char* argv[])
 			{
 				std::cout << "nal size " << datalen << std::endl;
 			}
-			datalen = 0;
+
+			in.read(reinterpret_cast<char*>(&c), 1);
+			memcpy(&nalheader, &c, 1);
+			std::cout << std::string(50, '*') << std::endl;
+			std::cout << nalheader << std::endl;
+
+			datalen = 1;
 			step = 0;
 		}
 		else
