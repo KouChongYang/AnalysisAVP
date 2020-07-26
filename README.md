@@ -89,6 +89,49 @@ ffmpeg -i gx.mkv -an -c:v rawvideo -pix_fmt yuv420p out.yuv
 ffmpeg -i gx.mkv -vn -ar 44100 -ac2 -f s16le out.pcm
 ```
 
+#### 滤镜命令
+
+* [官方说明](http://ffmpeg.org/ffmpeg-filters.html)
+
+```shell
+ffmpeg -i gx.mkv -vf crop=in_w-200:in_h-200 -c:v libx264 -c:a copy out.mp4
+```
+
+#### 裁剪与合并命令
+
+##### 裁剪
+
+```shell
+ffmpeg -i gx.mkv -ss 00:00:00 -t 10 out.ts
+```
+
+##### 合并
+
+```shell
+ffmpeg -f concat -i inputs.txt out.flv
+```
+
+* inputs.txt文件内容：
+
+```shell
+file '1.ts'
+file '2.ts'
+```
+
+#### 图片/视频转换命令
+
+##### 视频转图片
+
+```shell
+ffmpeg -i gx.mkv -r 1 -f image2 image-%3d.jpeg
+```
+
+##### 图片转视频
+
+```shell
+ffmpeg -i image-%3d.jpeg out.mp4
+```
+
 #### 直播相关命令
 
 ##### 直播推流
