@@ -35,3 +35,99 @@ Analysis of audio and video protocols
 ![ADTS的可变头信息](/images/ADTS的可变头信息.png)
 
 * ADTS，音频数据传输流（Audio Data Transport Stream）。这种格式的特征是它是一个有同步字的比特流，解码可以在这个流中任何位置开始。它的特征类似于mp3数据流格式。
+
+## FFmpeg
+
+### FFmpeg命令大全
+
+![FFmpeg命令大全](/images/FFmpeg命令大全.png)
+
+### FFmpeg常用命令
+
+#### FFmpeg基本信息查询命令
+
+![FFmpeg基本信息查询命令](/images/FFmpeg基本信息查询命令.png)
+
+#### 查询设备列表命令
+
+```shell
+ffmpeg -f dshow -list_devices true -i dummy
+```
+
+#### 录屏命令
+
+``` shell
+ffmpeg -f gdigrab -i desktop -r 30 out.mp4
+```
+
+#### 分解与复用命令
+
+##### 多媒体格式转换
+
+```shell
+ffmpeg -i gx.mkv -vcodec copy -acodec copy out.mp4
+```
+
+##### 提取码流
+
+```shell
+ffmpeg -i gx.mkv -vcodec copy -an out.264
+ffmpeg -i gx.mkv -acodec copy -vn out.aac
+```
+
+#### 处理原始数据命令
+
+##### 提取YUV数据
+
+```shell
+ffmpeg -i gx.mkv -an -c:v rawvideo -pix_fmt yuv420p out.yuv
+```
+
+##### 提取PCM数据
+
+```shell
+ffmpeg -i gx.mkv -vn -ar 44100 -ac2 -f s16le out.pcm
+```
+
+#### 直播相关命令
+
+##### 直播推流
+
+```shell
+ffmpeg -re -i gx.mkv -c copy -f flv rtmp://server/live/stream
+```
+
+##### 直播拉流
+
+```shell
+ffmpeg -i rtmp://58.200.131.2:1935/livetv/hunantv -c copy dump.flv
+```
+
+### Windows上编译FFmpeg
+
+* 安装tmd64-gcc
+
+-- [下载地址](https://jmeubank.github.io/tdm-gcc/download/)
+
+*  安装msys
+
+-- [下载地址](https://sourceforge.net/projects/msys/)
+
+* 下载FFmpeg源码
+
+```shell
+git clone https://git.ffmpeg.org/ffmpeg.git
+```
+
+* 通过vs命令行工具打开msys的启动脚本（msys.bat）。
+
+* 执行编译命令
+
+    ```shell
+    ./configure --prefix=./msvc2019_32_shared --target-os=win32 --arch=x86 --toolchain=msvc --disable-static --enable-shared --disable-x86asm
+    make -j 8
+    make install
+    ```
+
+    
+
