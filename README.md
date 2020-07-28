@@ -166,11 +166,39 @@ git clone https://git.ffmpeg.org/ffmpeg.git
 
 * 执行编译命令
 
-    ```shell
-    ./configure --prefix=./msvc2019_32_shared --target-os=win32 --arch=x86 --toolchain=msvc --disable-static --enable-shared --disable-x86asm
-    make -j 8
-    make install
-    ```
+```shell
+./configure --prefix=./msvc2019_32_shared --target-os=win32 --arch=x86 --toolchain=msvc --disable-static --enable-shared --disable-x86asm
+make -j 8
+make install
+```
 
-    
+### FFmpeg API
+
+#### 日志
+
+```shell
+#include <libavutil/log.h>
+av_log_set_level(AV_LOG_DEBUG);
+av_log(nullptr, AV_LOG_INFO, "%s", "some logs");
+```
+
+#### 文件操作
+
+```shell
+#include <libavformat/avformat.h>
+avpriv_io_delete("./test.txt");
+avpriv_io_move("src", "dst");
+```
+
+#### 目录操作
+
+```shell
+#include <libavformat/avformat.h>
+avio_open_dir(&ctx, "./", nullptr);
+avio_read_dir(ctx, &entry);
+avio_free_directory_entry(&entry);
+avio_close_dir(&ctx);
+```
+
+
 
