@@ -200,5 +200,21 @@ avio_free_directory_entry(&entry);
 avio_close_dir(&ctx);
 ```
 
+#### 输出音视频信息
 
+```shell
+#include <libavformat/avformat.h>
+avformat_open_input(&fmtctx, "gx.mkv", nullptr, nullptr);
+av_dump_format(fmtctx, 0, "gx.mkv", 0);
+avformat_close_input(&fmtctx);
+```
+
+#### 抽取音频数据
+
+```shell
+av_find_best_stream(fmtctx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+av_init_packet(&pkt);
+av_read_frame(fmtctx, &pkt);
+av_packet_unref(&pkt);
+```
 
