@@ -209,12 +209,60 @@ av_dump_format(fmtctx, 0, "gx.mkv", 0);
 avformat_close_input(&fmtctx);
 ```
 
-#### 抽取音频数据
+#### 抽取音视频数据
 
 ```shell
 av_find_best_stream(fmtctx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+av_find_best_stream(fmtctx, AVMEDIA_TYPE_VIDIO, -1, -1, NULL, 0);
 av_init_packet(&pkt);
 av_read_frame(fmtctx, &pkt);
 av_packet_unref(&pkt);
+av_grow_packet(out, size);
+```
+
+#### 封装
+
+```shell
+avformat_alloc_output_context2(&fmtctx, nullptr, nullptr, "out.flv");
+avformat_free_context(&fmtctx);
+avformat_new_stream(fmtctx, nullptr);
+avcodec_parameters_copy(outcodecpar, incodecpar);
+avformat_write_header(fmtctx, nullptr);
+av_write_frame(fmtctx, pkt);
+av_interleaved_write_frame(fmtctx, pkt);
+av_write_trailer(fmtctx);
+```
+
+#### 裁剪
+
+```shell
+av_seek_frame(fmtctx, -1, time, AVSEEK_FLAG_ANY);
+```
+
+#### 解码
+
+```shell
+#include <libavcodec/avcodec.h>
+av_frame_alloc();
+av_frame_free();
+avcodec_alloc_context3();
+avcodec_free_context();
+avcodec_find_decoder();
+avcodec_open2();
+avcodec_decode_video2();
+avcodec_decode_audio2();
+```
+
+#### 编码
+
+```shell
+#include <libavcodec/avcodec.h>
+avcodec_find_encoder_by_name();
+avcodec_alloc_context3();
+avcodec_free_context();
+av_opt_set();
+avcodec_open2();
+avcodec_encode_video2();
+avcodec_encode_audio2();
 ```
 
