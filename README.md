@@ -266,3 +266,67 @@ avcodec_encode_video2();
 avcodec_encode_audio2();
 ```
 
+## SDL
+
+### 编译
+
+```shell
+configure --prefix=/build
+make -j 8
+make install
+```
+
+### SDL API
+
+#### 基础
+
+```shell
+#include <SDL.h>
+SDL_Init();
+SDL_Quit();
+```
+
+#### 渲染
+
+```shell
+SDL_CreateWindow();
+SDL_CreateRender();
+SDL_CreateTexture();
+SDL_SetRenderTarget();
+SDL_UpdateTexture();
+SDL_UpdateYUVTexture();
+SDL_RenderDrawColor();
+SDL_RenderDrawRect();
+SDL_RenderFillRect();
+SDL_RenderClear();
+SDL_RenderCopy();
+SDL_RenderPresent();
+SDL_Delay();
+SDL_DesttoyTexture();
+SDL_DestroyRenderer();
+SDL_DestroyWindow();
+```
+
+#### 事件
+
+```shell
+SDL_PollEvent();
+SDL_WaitEvent();
+SDL_PushEvent();
+```
+
+#### 线程
+
+```shell
+SDL_CreateThread();
+```
+
+#### 播放音频
+
+```shell
+SDL_OpenAudio();
+SDL_CloseAudio();
+SDL_PauseAudio();
+SDL_MixAudio();
+```
+
