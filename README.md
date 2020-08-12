@@ -330,3 +330,38 @@ SDL_PauseAudio();
 SDL_MixAudio();
 ```
 
+## WebRTC
+
+### 架构
+
+![WebRTC架构](/images/WebRTC架构.png)
+
+整体架构分为应用层和核心层。应用层提供实现相关业务逻辑Api，核心层提供应用层需要的核心API。
+
+其中核心层分为四层：
+
+第一层为C++ API，其中最主要的是**PeerConnection**，这个接口需要重点学习和掌握。
+
+第二层为Session层，为上下文管理层，应用里的音频和视频及非音视频的数据处理逻辑都可以在这层进行。
+
+第三层为引擎和传输层，包括音频引擎和视频引擎，以及音视频的传输，这也是整个架构中最重要的一层。
+
+第四层与硬件相关，包括音视频的采集和网络的IO。
+
+注：WebRTC的核心层无视频的渲染，所有的渲染都需要应用层自行实现。
+
+这里着重提一下第三层：
+
+- Voice Engine（音频引擎模块）：包含编码能力、音频缓冲Buff（防网络抖动）、回音消除（实时连麦关键点）。
+- Video Engine（视频引擎模块）：包含编码能力（如VP8）、视频缓冲、图像增强。
+- Transport（传输模块）：传输协议在底层使用UDP，上层使用的RTP（为安全起见增加SRTP），还有P2P机制，包括STUN、TURN 和 ICE。
+
+### 目录结构
+
+![WebRTC目录结构1](E:\Code\AnalysisAVP\images\WebRTC目录结构1.png)
+
+![WebRTC目录结构2](E:\Code\AnalysisAVP\images\module子目录结构2.png)
+
+![module子目录结构1](E:\Code\AnalysisAVP\images\module子目录结构1.png)
+
+![module子目录结构2](E:\Code\AnalysisAVP\images\module子目录结构2.png)
