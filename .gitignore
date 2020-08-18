@@ -12,3 +12,6 @@ _deps
 
 .vscode
 build
+bin
+lib
+

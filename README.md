@@ -358,10 +358,10 @@ SDL_MixAudio();
 
 ### 目录结构
 
-![WebRTC目录结构1](E:\Code\AnalysisAVP\images\WebRTC目录结构1.png)
+![WebRTC目录结构1](/images/WebRTC目录结构1.png)
 
-![WebRTC目录结构2](E:\Code\AnalysisAVP\images\module子目录结构2.png)
+![WebRTC目录结构2](/images/module子目录结构2.png)
 
-![module子目录结构1](E:\Code\AnalysisAVP\images\module子目录结构1.png)
+![module子目录结构1](/images/module子目录结构1.png)
 
-![module子目录结构2](E:\Code\AnalysisAVP\images\module子目录结构2.png)
+![module子目录结构2](/images/module子目录结构2.png)

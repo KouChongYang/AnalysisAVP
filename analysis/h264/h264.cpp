@@ -1,4 +1,4 @@
-#include "h264.h"
+﻿#include "h264.h"
 
 const char* nal_parse_idc(uint8_t idc)
 {

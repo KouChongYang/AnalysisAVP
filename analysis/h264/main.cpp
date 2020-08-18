@@ -1,4 +1,4 @@
-#include "h264.h"
+ï»¿#include "h264.h"
 
 #include <iostream>
 #include <iomanip>
@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 
 	unsigned char c = 0;
 	int32_t datalen = 0;
-	int step = 0;//¼ÇÂ¼0x00µÄ¸öÊý
+	int step = 0;//è®°å½•0x00çš„ä¸ªæ•°
 	while (in.read(reinterpret_cast<char*>(&c), 1))
 	{
 		if (c == 0)
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 			datalen += (step > 3 ? step - 3 : 0);
 			if (datalen != 0)
 			{
-				std::cout << "nalu size : " << datalen-1 << std::endl;
+				std::cout << "nalu size : " << datalen - 1 << std::endl;
 				in.seekg(-naluflagsize - datalen, std::ios::cur);
 
 				if (!in.read(reinterpret_cast<char*>(&c), 1))
