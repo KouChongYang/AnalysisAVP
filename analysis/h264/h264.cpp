@@ -1,65 +1,64 @@
-#include <iostream>
-#include <fstream>
-
 #include "h264.h"
 
-int main(int argc, char* argv[])
+const char* nal_parse_idc(uint8_t idc)
 {
-	std::cout << "h264 analysis" << std::endl;
-
-	std::cout << "Usage : " << "h264 h264file." << std::endl;
-
-	if (argc < 2)
+	switch (idc)
 	{
-		std::cerr << "please see the usage message." << std::endl;
-		return -1;
+	case NAL_REF_IDC_PRIORITY_HIGHEST:
+		return "HIGHEST";
+	case  NAL_REF_IDC_PRIORITY_HIGH:
+		return "HEIGHT";
+	case  NAL_REF_IDC_PRIORITY_LOW:
+		return "LOW";
+	case  NAL_REF_IDC_PRIORITY_DISPOSABLE:
+		return "DISPOSABLE";
+	default:
+		return "UNKNOWN";
 	}
-	std::ifstream in(argv[1], std::ios::binary);
-	if (in.fail())
+}
+
+const char* nal_parse_type(uint8_t type)
+{
+	switch (type)
 	{
-		std::cerr << "can not open file " << argv[1] << std::endl;
-		return -1;
+	case NAL_UNIT_TYPE_UNSPECIFIED:
+		return "Unspecified";
+	case NAL_UNIT_TYPE_CODED_SLICE_NON_IDR:
+		return "Coded slice of a non-IDR picture";
+	case NAL_UNIT_TYPE_CODED_SLICE_DATA_PARTITION_A:
+		return "Coded slice data partition A";
+	case NAL_UNIT_TYPE_CODED_SLICE_DATA_PARTITION_B:
+		return "Coded slice data partition B";
+	case NAL_UNIT_TYPE_CODED_SLICE_DATA_PARTITION_C:
+		return "Coded slice data partition C";
+	case NAL_UNIT_TYPE_CODED_SLICE_IDR:
+		return "Coded slice of an IDR picture";
+	case NAL_UNIT_TYPE_SEI:
+		return "Supplemental enhancement information (SEI)";
+	case NAL_UNIT_TYPE_SPS:
+		return "Sequence parameter set";
+	case NAL_UNIT_TYPE_PPS:
+		return "Picture parameter set";
+	case NAL_UNIT_TYPE_AUD:
+		return "Access unit delimiter";
+	case NAL_UNIT_TYPE_END_OF_SEQUENCE:
+		return "End of sequence";
+	case NAL_UNIT_TYPE_END_OF_STREAM:
+		return "End of stream";
+	case NAL_UNIT_TYPE_FILLER:
+		return "Filler data";
+	case NAL_UNIT_TYPE_SPS_EXT:
+		return "Sequence parameter set extension";
+	case NAL_UNIT_TYPE_CODED_SLICE_AUX:
+		return "Coded slice of an auxiliary coded picture without partitioning";
+	default:
+		return "UNKNOWN";
 	}
+}
 
-	NALHEADER nalheader = { 0 };
-	unsigned char c = 0;
-	uint32_t datalen = 0;
-	int step = 0;//记录0x00的个数
-	while (in.read(reinterpret_cast<char*>(&c), 1))
-	{
-		if (c == 0)
-		{
-			++step;
-		}
-		else if (c == 1 && step >= 2)
-		{
-			datalen += (step > 3 ? step - 3 : 0);
-			if (datalen != 0)
-			{
-				std::cout << "nal size " << datalen << std::endl;
-			}
-
-			in.read(reinterpret_cast<char*>(&c), 1);
-			memcpy(&nalheader, &c, 1);
-			std::cout << std::string(50, '*') << std::endl;
-			std::cout << nalheader << std::endl;
-
-			datalen = 1;
-			step = 0;
-		}
-		else
-		{
-			datalen += step + 1;
-			step = 0;
-		}
-	}
-
-	datalen += step;
-	if (datalen != 0)
-	{
-		std::cout << "nal size " << datalen << std::endl;
-	}
-
-	in.close();
-	return 0;
+std::ostream& operator<<(std::ostream& os, const NALHEADER& nalheader)
+{
+	os << "nal_ref_idc : " << nal_parse_idc(nalheader.nal_ref_idc)
+		<< "\nnal_unit_type : " << nal_parse_type(nalheader.nal_unit_type);
+	return os;
 }
