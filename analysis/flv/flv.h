@@ -94,7 +94,7 @@ typedef struct __VIDEOTAG
 			//如果AVCPacketType=1，则为时间cts偏移量；否则，为0。当B帧的存在时，视频解码呈现过程中，dts、pts可能不同，cts的计算公式为 pts - dts/90，单位为毫秒；如果B帧不存在，则cts固定为0。
 			GINT24 compositiontime;
 			//AVCPacketType=0，则为AVCDecoderConfigurationRecord，H.264 视频解码所需要的参数集（SPS、PPS）
-			//AVCPacketType=1，则为NALU（一个或多个）
+			//AVCPacketType=1，则为NALU（一个或多个），data[0-3]是数据长度！
 			//如果AVCPacketType=2，则为空
 			unsigned char data[];
 		}avcvideopacket;

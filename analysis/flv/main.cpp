@@ -25,6 +25,10 @@ int main(int argc, char* argv[])
 	in.read(reinterpret_cast<char*>(&flvheader), sizeof(flvheader));
 	std::cout << flvheader << std::endl;
 
+	// 保存264数据
+	std::ofstream out("out.264", std::ios::binary);
+	char nalutag[] = { 0x00, 0x00, 0x00, 0x01 };
+
 	while (true)
 	{
 		GINT32 presize = { 0 };
@@ -57,10 +61,16 @@ int main(int argc, char* argv[])
 
 				SequenceParameterSet* sps =
 					reinterpret_cast<SequenceParameterSet*>(configheader->data);
+				int datasize = FINT16TOINT((sps->sequenceParameterSetLength));
+				out.write(nalutag, 4);
+				out.write(reinterpret_cast<char*>(sps->sequenceParameterSetNALUnit), datasize);
 				std::cout << *sps << std::endl;
 
 				PictureParameterSet* pps =
 					reinterpret_cast<PictureParameterSet*>(sps->sequenceParameterSetNALUnit + FINT16TOINT(sps->sequenceParameterSetLength));
+				datasize = FINT16TOINT((pps->pictureParameterSetLength));
+				out.write(nalutag, 4);
+				out.write(reinterpret_cast<char*>(pps->pictureParameterSetNALUnit), datasize);
 				std::cout << *pps << std::endl;
 			}
 			else if (pvideotag->videopacket.avcvideopacket.type == AVC_PACKET_NALU)
@@ -72,9 +82,15 @@ int main(int argc, char* argv[])
 					std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned int>(pvideotag->videopacket.avcvideopacket.data[i]) << " ";
 				}
 				std::cout.flags(f);
+
+				GINT32* nalsize = reinterpret_cast<GINT32*>(&pvideotag->videopacket.avcvideopacket.data[0]);
+				int datasize = FINT32TOINT((*nalsize));
+				out.write(nalutag, 4);
+				out.write(reinterpret_cast<char*>(&pvideotag->videopacket.avcvideopacket.data[0 + 4]), datasize);
 			}
 			else if (pvideotag->videopacket.avcvideopacket.type == AVC_PACKET_END)
 			{
+				out.close();
 				std::cout << "AVC end of sequence" << std::endl;
 			}
 		}
