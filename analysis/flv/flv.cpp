@@ -1,4 +1,10 @@
-﻿#include "flv.h"
+﻿/*
+ * @Author: gongluck 
+ * @Date: 2020-08-24 20:32:57 
+ * @Last Modified by:   gongluck 
+ * @Last Modified time: 2020-08-24 20:32:57 
+ */
+#include "flv.h"
 
 #include <iomanip>
 
@@ -128,6 +134,11 @@ std::ostream& operator<<(std::ostream& os, const PictureParameterSet& pps)
 		os << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned int>(pps.pictureParameterSetNALUnit[i]) << " ";
 	}
 	std::cout.flags(f);
+	return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const AUDIOTAG& audiotag)
+{
 	return os;
 }
 

@@ -1,4 +1,10 @@
-﻿#include "h264.h"
+﻿/*
+ * @Author: gongluck
+ * @Date: 2020-08-24 19:50:39
+ * @Last Modified by:   gongluck
+ * @Last Modified time: 2020-08-24 19:50:39
+ */
+#include "h264.h"
 
 #include <iostream>
 #include <iomanip>
@@ -33,7 +39,7 @@ int main(int argc, char* argv[])
 		}
 		else if (c == 1 && step >= 2)
 		{
-			auto naluflagsize = step > 2 ? 3 : 4;
+			std::streamoff naluflagsize = step > 2 ? 4 : 3;
 			datalen += (step > 3 ? step - 3 : 0);
 			if (datalen != 0)
 			{
@@ -47,7 +53,6 @@ int main(int argc, char* argv[])
 				std::cout << *pnalheader << std::endl;
 
 				in.seekg(-1, std::ios::cur);
-
 				std::ios::fmtflags f(std::cout.flags());
 				for (int i = 0; i < datalen; ++i)
 				{
@@ -67,6 +72,29 @@ int main(int argc, char* argv[])
 			datalen += step + 1;
 			step = 0;
 		}
+	}
+
+	uint8_t data[] = {
+	0x00, 0x00, 0x00, 0x01,
+	0x12, 0x45, 0x55, 0x55,
+	0x00, 0x00, 0x01, 0x01,
+	0x18, 0x45, 0x55, 0x55,
+	0x00, 0x00, 0x00, 0x01,
+	0x00, 0x00, 0x01, 0x01, };
+	int8_t nalstep = 0;
+	int ret = 0;
+	int tmp = ret;
+	while (ret >= 0)
+	{
+		tmp = ret;
+		ret = findnalu(data, ret, sizeof(data), &nalstep);
+		std::ios::fmtflags f(std::cout.flags());
+		for (int i = tmp; i > 0 && i < ret - nalstep; ++i)
+		{
+			std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned int>(data[i]) << " ";
+		}
+		std::cout << std::endl;
+		std::cout.flags(f);
 	}
 
 	in.close();

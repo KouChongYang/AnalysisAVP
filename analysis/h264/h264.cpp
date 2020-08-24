@@ -1,4 +1,10 @@
-﻿#include "h264.h"
+﻿/*
+ * @Author: gongluck
+ * @Date: 2020-08-24 19:50:32
+ * @Last Modified by:   gongluck
+ * @Last Modified time: 2020-08-24 19:50:32
+ */
+#include "h264.h"
 
 const char* nal_parse_idc(uint8_t idc)
 {
@@ -61,4 +67,35 @@ std::ostream& operator<<(std::ostream& os, const NALHEADER& nalheader)
 	os << "nal_ref_idc : " << nal_parse_idc(nalheader.nal_ref_idc)
 		<< "\nnal_unit_type : " << nal_parse_type(nalheader.nal_unit_type);
 	return os;
+}
+
+int32_t findnalu(uint8_t* data, uint32_t start, uint32_t end, int8_t* nalstep)
+{
+	if (start >= end)
+	{
+		return -1;
+	}
+
+	uint32_t i = start;
+	int step = 0;//记录0x00的个数
+	*nalstep = 0;
+
+	while (i++ < end)
+	{
+		if (data[i - 1] == 0)
+		{
+			++step;
+		}
+		else if (data[i - 1] == 1 && step >= 2)
+		{
+			*nalstep = step > 2 ? 4 : 3;
+			break;
+		}
+		else
+		{
+			step = 0;
+		}
+	}
+
+	return i >= end ? end : i;
 }

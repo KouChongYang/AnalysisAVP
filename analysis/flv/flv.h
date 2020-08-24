@@ -1,4 +1,10 @@
-﻿#pragma once
+﻿/*
+ * @Author: gongluck 
+ * @Date: 2020-08-24 20:33:04 
+ * @Last Modified by:   gongluck 
+ * @Last Modified time: 2020-08-24 20:33:04 
+ */
+#pragma once
 
 #include <stdint.h>
 #include <iostream>
@@ -28,6 +34,40 @@
 #define AVC_PACKET_HEADER	0	//AVC sequence header
 #define AVC_PACKET_NALU		1	//AVC NALU
 #define AVC_PACKET_END		2	//AVC end of sequence
+
+//flv sound format
+#define FLV_SOUND_FORMAT_PCM				0	//Linear PCM, platform endian 
+#define FLV_SOUND_FORMAT_ADPCM				1	//ADPCM 
+#define FLV_SOUND_FORMAT_MP3				2	//MP3
+#define FLV_SOUND_FORMAT_PCMLE				3	//inear PCM, little endian 
+#define FLV_SOUND_FORMAT_NELLYMOSER16MONO	4	//Nellymoser 16-kHz mono 
+#define FLV_SOUND_FORMAT_NELLYMOSER8MONO	5	//Nellymoser 8-kHz mono 
+#define FLV_SOUND_FORMAT_NELLYMOSER			6	//Nellymoser 
+#define FLV_SOUND_FORMAT_G711LA				7	//G.711A-law logarithmic PCM 
+#define FLV_SOUND_FORMAT_G711MU				8	//G.711mu-law logarithmic PCM 
+#define FLV_SOUND_FORMAT_RESERVED			9	//reserved 
+#define FLV_SOUND_FORMAT_AAC				10	//AAC 
+#define FLV_SOUND_FORMAT_SPEEX				11	//Speex 
+#define FLV_SOUND_FORMAT_MP3				14	//MP3 8-Khz 
+#define FLV_SOUND_FORMAT_DEVICE				15	//Device-specific sound
+
+//flv sound rate
+#define FLV_SOUND_RATE_55	0//5.5-kHz
+#define FLV_SOUND_RATE_11	1//11-kHz
+#define FLV_SOUND_RATE_22	2//22-kHz
+#define FLV_SOUND_RATE_44	3//44-kHz
+
+//flv sound size
+#define FLV_SOUND_SIZE_8	0//8Bit
+#define FLV_SOUND_SIZE_16	1//16Bit
+
+//flv audio tag sound type
+#define FLV_AUDIO_SOUND_MONO	0	//单声道 
+#define FLV_AUDIO_SOUND_STEREO	1	//双声道
+
+//aac packet type
+#define AAC_PACKET_TYPE_HEAD	0	//AAC sequence header
+#define AAC_PACKET_TYPE_RAW		1	//raw
 
 #pragma pack(1)
 typedef struct __GINT16
@@ -75,7 +115,7 @@ typedef struct __FLVHEADER
 /*tag头*/
 typedef struct __TAGHEADER
 {
-	uint8_t type;			//0x08--音频 0x09--视频 0x12--脚本
+	uint8_t type;			//FLV_TAG_TYPE_XXX
 	GINT24 datalen;			//数据区的长度
 	GTIMESTAMP timestamp;	//时间戳
 	GINT24 streamsid;		//流信息
@@ -84,18 +124,18 @@ typedef struct __TAGHEADER
 /*tag数据区*/
 typedef struct __VIDEOTAG
 {
-	uint8_t codecid : 4;		//编解码器
-	uint8_t type : 4;		//视频帧类型
+	uint8_t codecid : 4;		//编解码器，FLV_VIDEO_CODECID_XXX
+	uint8_t type : 4;			//视频帧类型，AVC_PACKET_XXX
 	union
 	{
-		//codecid == VIDEO_TAG_FRAME_CODECID_AVC
+		//codecid == FLV_VIDEO_CODECID_AVC
 		struct AVCVIDEOPACKE {
-			uint8_t type;
-			//如果AVCPacketType=1，则为时间cts偏移量；否则，为0。当B帧的存在时，视频解码呈现过程中，dts、pts可能不同，cts的计算公式为 pts - dts/90，单位为毫秒；如果B帧不存在，则cts固定为0。
+			uint8_t type;//AVCPacketType
+			//如果type=1，则为时间cts偏移量；否则，为0。当B帧的存在时，视频解码呈现过程中，dts、pts可能不同，cts的计算公式为 pts - dts/90，单位为毫秒；如果B帧不存在，则cts固定为0。
 			GINT24 compositiontime;
-			//AVCPacketType=0，则为AVCDecoderConfigurationRecord，H.264 视频解码所需要的参数集（SPS、PPS）
-			//AVCPacketType=1，则为NALU（一个或多个），data[0-3]是数据长度！
-			//如果AVCPacketType=2，则为空
+			//type=0，则为AVCDecoderConfigurationRecord，H.264 视频解码所需要的参数集（SPS、PPS）
+			//type=1，则为NALU（一个或多个），data[0-3]是数据长度！
+			//如果type=2，则为空
 			unsigned char data[];
 		}avcvideopacket;
 	}videopacket;
@@ -126,6 +166,32 @@ typedef struct __PictureParameterSet
 }PictureParameterSet;
 /*****************************/
 /*...........................*/
+typedef struct __AUDIOTAG
+{
+	uint8_t soundtype : 1;
+	uint8_t soundSize : 1;
+	uint8_t soundRate : 2;
+	uint8_t soundFormat : 4;
+	
+	union
+	{
+		//soundFormat == FLV_SOUND_FORMAT_AAC
+		struct AACAUDIOPACKET {
+			uint8_t aacpackettype;
+			uint8_t data[];
+		}aacaudiopacket;
+	}audiopacket;
+}AUDIOTAG;
+typedef struct __AudioSpecificConfig
+{
+	uint8_t SamplingFrequencyIndexH : 3;
+	uint8_t AudioObjectType : 5;
+	uint8_t : 3;
+	uint8_t ChannelConfiguration : 4;
+	uint8_t SamplingFrequencyIndexL : 1;
+	uint8_t AOTSpecificConfig[];
+}AudioSpecificConfig;
+/*...........................*/
 /*前一个tag的长度(4字节)*/
 /*EOF*/
 
@@ -134,6 +200,7 @@ typedef struct __PictureParameterSet
 #define FINT16TOINT(x) ((x.data1<<8 & 0xff00) | (x.data2 & 0xff))
 #define FINT24TOINT(x) ((x.data1<<16 & 0xff0000) | (x.data2<<8 & 0xff00) | (x.data3 & 0xff))
 #define FINT32TOINT(x) ((x.data1<<24 & 0xff000000) | (x.data2<<16 & 0xff0000) | (x.data3<<8 & 0xff00) | (x.data4 & 0xff))
+#define FSAMPLEFREQUENCYINDEX(audiospecificconfig) ((audiospecificconfig.SamplingFrequencyIndexH << 1) | audiospecificconfig.SamplingFrequencyIndexL)
 
 const char* flv_tag_parse_type(uint8_t type);
 const char* flv_video_parse_type(uint8_t type);
@@ -146,3 +213,4 @@ std::ostream& operator<<(std::ostream& os, const VIDEOTAG& videotag);
 std::ostream& operator<<(std::ostream& os, const AVCDecoderConfigurationRecordHeader& configureHeader);
 std::ostream& operator<<(std::ostream& os, const SequenceParameterSet& sps);
 std::ostream& operator<<(std::ostream& os, const PictureParameterSet& sps);
+std::ostream& operator<<(std::ostream& os, const AUDIOTAG& audiotag);
