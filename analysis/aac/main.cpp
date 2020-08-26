@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 	while (in.read(reinterpret_cast<char*>(&adts), sizeof(adts)))
 	{
 		framelength = get_aac_frame_length(adts);
-		std::cout << framelength << std::endl;
+		std::cout << adts << std::endl;
 		in.seekg(framelength - sizeof(adts), std::ios::cur);
 	}
 
