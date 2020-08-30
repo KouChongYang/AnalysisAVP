@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+﻿cmake_minimum_required(VERSION 3.15)
 
 # 获取当前文件夹名
 STRING(REGEX REPLACE ".*/(.*)" "\\1" CURRENT_FOLDER ${CMAKE_CURRENT_SOURCE_DIR})
@@ -14,9 +14,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/../lib/debug)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/../lib/release)
 
 # 添加源码文件到项目
-FILE(GLOB header ./*.h)
+FILE(GLOB header ./*.h ../aac/*.h)
 aux_source_directory(. SRCS)
-add_executable(${PROJECT_NAME} ${header} ${SRCS})
+add_executable(${PROJECT_NAME} ${header} ${SRCS} ../aac/aac.cpp)
 
 # 使用DEBUG_POSTFIX指定输出文件结尾对executable target(可执行文件)无效
 #set (CMAKE_DEBUG_POSTFIX d)

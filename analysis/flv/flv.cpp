@@ -1,8 +1,8 @@
 ﻿/*
- * @Author: gongluck 
- * @Date: 2020-08-24 20:32:57 
- * @Last Modified by:   gongluck 
- * @Last Modified time: 2020-08-24 20:32:57 
+ * @Author: gongluck
+ * @Date: 2020-08-24 20:32:57
+ * @Last Modified by:   gongluck
+ * @Last Modified time: 2020-08-24 20:32:57
  */
 #include "flv.h"
 
@@ -65,6 +65,86 @@ const char* flv_video_parse_codecid(uint8_t codecid)
 	}
 }
 
+const char* flv_audio_parse_type(uint8_t type)
+{
+	switch (type)
+	{
+	case FLV_AUDIO_SOUND_MONO:
+		return "mono";
+	case FLV_AUDIO_SOUND_STEREO:
+		return "stereo";
+	default:
+		return "UNKNOWN";
+	}
+}
+
+const char* flv_audio_parse_soundsize(uint8_t soundsize)
+{
+	switch (soundsize)
+	{
+	case FLV_SOUND_SIZE_8:
+		return "8Bits";
+	case FLV_SOUND_SIZE_16:
+		return "16Bits";
+	default:
+		return "UNKNOWN";
+	}
+}
+
+const char* flv_audio_parse_soundrate(uint8_t soundrate)
+{
+	switch (soundrate)
+	{
+	case FLV_SOUND_RATE_55:
+		return "5.5-kHz";
+	case FLV_SOUND_RATE_11:
+		return "11-kHz";
+	case FLV_SOUND_RATE_22:
+		return "22-kHz";
+	case FLV_SOUND_RATE_44:
+		return "44-kHz";
+	default:
+		return "UNKNOWN";
+	}
+}
+
+const char* flv_audio_parse_soundformat(uint8_t format)
+{
+	switch (format)
+	{
+	case FLV_SOUND_FORMAT_PCM:
+		return"Linear PCM, platform endian";
+	case FLV_SOUND_FORMAT_ADPCM:
+		return"ADPCM";
+	case FLV_SOUND_FORMAT_MP3:
+		return"MP3";
+	case FLV_SOUND_FORMAT_PCMLE:
+		return"inear PCM, little endian";
+	case FLV_SOUND_FORMAT_NELLYMOSER16MONO:
+		return"Nellymoser 16-kHz mono";
+	case FLV_SOUND_FORMAT_NELLYMOSER8MONO:
+		return"Nellymoser 8-kHz mono";
+	case FLV_SOUND_FORMAT_NELLYMOSER:
+		return"Nellymoser";
+	case FLV_SOUND_FORMAT_G711LA:
+		return"G.711A-law logarithmic PCM";
+	case FLV_SOUND_FORMAT_G711MU:
+		return"G.711mu-law logarithmic PCM";
+	case FLV_SOUND_FORMAT_RESERVED:
+		return"reserved";
+	case FLV_SOUND_FORMAT_AAC:
+		return"AAC";
+	case FLV_SOUND_FORMAT_SPEEX:
+		return"Speex";
+	case FLV_SOUND_FORMAT_MP3_8:
+		return"MP3 8-Khz";
+	case FLV_SOUND_FORMAT_DEVICE:
+		return"Device-specific sound";
+	default:
+		return "UNKNOWN";
+	}
+}
+
 const char* avc_packet_parse_type(uint8_t type)
 {
 	switch (type)
@@ -82,40 +162,40 @@ const char* avc_packet_parse_type(uint8_t type)
 
 std::ostream& operator<<(std::ostream& os, const FLVHEADER& flvheader)
 {
-	os << "f : " << static_cast<char>(flvheader.f)
-		<< "\nl : " << static_cast<char>(flvheader.l)
-		<< "\nv : " << static_cast<char>(flvheader.v)
-		<< "\ntype : " << static_cast<int>(flvheader.type)
-		<< "\nvideo : " << static_cast<int>(flvheader.video)
-		<< "\naudio : " << static_cast<int>(flvheader.audio);
+	os << "f : " << static_cast<char>(flvheader.F)
+		<< "\nl : " << static_cast<char>(flvheader.L)
+		<< "\nv : " << static_cast<char>(flvheader.V)
+		<< "\ntype : " << static_cast<int>(flvheader.F)
+		<< "\nvideo : " << static_cast<int>(flvheader.hasvideo)
+		<< "\naudio : " << static_cast<int>(flvheader.hasaudio);
 	return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const VIDEOTAG& videotag)
+std::ostream& operator<<(std::ostream& os, const FLVVIDEOTAG& videotag)
 {
 	os << "type : " << flv_video_parse_type(videotag.type)
 		<< "\ncodecid : " << flv_video_parse_codecid(videotag.codecid)
-		<< "\navcpacket type : " << avc_packet_parse_type(videotag.videopacket.avcvideopacket.type)
-		<< "\navcpacket compositiontime : " << FINT24TOINT(videotag.videopacket.avcvideopacket.compositiontime);
+		<< "\navcpacket type : " << avc_packet_parse_type(videotag.videopacket.avcvideopacket.avcpacketype)
+		<< "\navcpacket compositiontime : " << FLVINT24TOINT(videotag.videopacket.avcvideopacket.compositiontime);
 	return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const TAGHEADER& tagheader)
+std::ostream& operator<<(std::ostream& os, const FLVTAGHEADER& tagheader)
 {
-	os << "type : " << flv_tag_parse_type(tagheader.type)
-		<< "\ndatalen : " << FINT24TOINT(tagheader.datalen)
-		<< "\ntimestamp : " << FINT32TOINT(tagheader.timestamp)
-		<< "\nstreamsid : " << FINT24TOINT(tagheader.streamsid);
+	os << "type : " << flv_tag_parse_type(tagheader.flvtagtype)
+		<< "\ndatalen : " << FLVINT24TOINT(tagheader.datalen)
+		<< "\ntimestamp : " << FLVINT32TOINT(tagheader.timestamp)
+		<< "\nstreamsid : " << FLVINT24TOINT(tagheader.streamsid);
 	return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const SequenceParameterSet& sps)
 {
 	os << "numOfSequenceParameterSets : " << static_cast<unsigned int>(sps.numOfSequenceParameterSets)
-		<< "\nsequenceParameterSetLength : " << FINT16TOINT(sps.sequenceParameterSetLength)
+		<< "\nsequenceParameterSetLength : " << FLVINT16TOINT(sps.sequenceParameterSetLength)
 		<< "\nsps : ";
 	std::ios::fmtflags f(std::cout.flags());
-	for (int i = 0; i < FINT16TOINT(sps.sequenceParameterSetLength); ++i)
+	for (int i = 0; i < FLVINT16TOINT(sps.sequenceParameterSetLength); ++i)
 	{
 		os << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned int>(sps.sequenceParameterSetNALUnit[i]) << " ";
 	}
@@ -126,10 +206,10 @@ std::ostream& operator<<(std::ostream& os, const SequenceParameterSet& sps)
 std::ostream& operator<<(std::ostream& os, const PictureParameterSet& pps)
 {
 	os << "numOfPictureParameterSets : " << static_cast<unsigned int>(pps.numOfPictureParameterSets)
-		<< "\npictureParameterSetLength : " << FINT16TOINT(pps.pictureParameterSetLength)
+		<< "\npictureParameterSetLength : " << FLVINT16TOINT(pps.pictureParameterSetLength)
 		<< "\npps : ";
 	std::ios::fmtflags f(std::cout.flags());
-	for (int i = 0; i < FINT16TOINT(pps.pictureParameterSetLength); ++i)
+	for (int i = 0; i < FLVINT16TOINT(pps.pictureParameterSetLength); ++i)
 	{
 		os << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned int>(pps.pictureParameterSetNALUnit[i]) << " ";
 	}
@@ -139,6 +219,18 @@ std::ostream& operator<<(std::ostream& os, const PictureParameterSet& pps)
 
 std::ostream& operator<<(std::ostream& os, const AUDIOTAG& audiotag)
 {
+	os << "soundtype : " << flv_audio_parse_type(audiotag.soundtype)
+		<< "\nsoundSize : " << flv_audio_parse_soundsize(audiotag.soundSize)
+		<< "\nsoundRate : " << flv_audio_parse_soundrate(audiotag.soundRate)
+		<< "\nsoundFormat : " << flv_audio_parse_soundformat(audiotag.soundFormat);
+	return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const AudioSpecificConfig& audiospecificonfig)
+{
+	os << "SamplingFrequencyIndex : " << static_cast<unsigned int>(FVLSAMPLEFREQUENCYINDEX(audiospecificonfig))
+		<< "\nAudioObjectType : " << static_cast<unsigned int>(audiospecificonfig.AudioObjectType)
+		<< "\nChannelConfiguration : " << static_cast<unsigned int>(audiospecificonfig.ChannelConfiguration);
 	return os;
 }
 

@@ -1,13 +1,16 @@
 ﻿/*
- * @Author: gongluck 
- * @Date: 2020-08-24 20:33:08 
- * @Last Modified by:   gongluck 
- * @Last Modified time: 2020-08-24 20:33:08 
+ * @Author: gongluck
+ * @Date: 2020-08-24 20:33:08
+ * @Last Modified by:   gongluck
+ * @Last Modified time: 2020-08-24 20:33:08
  */
 #include "flv.h"
+#include "../aac/aac.h"
 
 #include <iomanip>
 #include <fstream>
+
+ //#define OUTPUTRAW
 
 int main(int argc, char* argv[])
 {
@@ -37,76 +40,83 @@ int main(int argc, char* argv[])
 
 	// 保存aac数据
 	std::ofstream outaac("out.aac", std::ios::binary);
+	ADTS adts = { 0 };
+	set_syncword(adts, 0xFFF);
+	adts.protection_absent = 1;
+	adts.ID = ADTS_ID_MPEG4;
+	set_adts_buffer_fullness(adts, 0x7FF);
 
 	while (true)
 	{
-		GINT32 presize = { 0 };
+		FLVINT32 presize = { 0 };
 		if (!in.read(reinterpret_cast<char*>(&presize), 4))
 			break;
-		std::cout << "presize : " << FINT32TOINT(presize) << std::endl;
+		std::cout << "presize : " << FLVINT32TOINT(presize) << std::endl;
 
 		std::cout << std::string(50, '*').c_str() << std::endl;
-		TAGHEADER tagheader = { 0 };
+		FLVTAGHEADER tagheader = { 0 };
 		if (!in.read(reinterpret_cast<char*>(&tagheader), sizeof(tagheader)))
 			break;
 		std::cout << tagheader << std::endl;
 
-		auto datalen = FINT24TOINT(tagheader.datalen);
+		auto datalen = FLVINT24TOINT(tagheader.datalen);
 		auto data = new char[datalen];
 		if (!in.read(data, datalen))
 			break;
 
-		if (tagheader.type == FLV_TAG_TYPE_VIDIO)
+		if (tagheader.flvtagtype == FLV_TAG_TYPE_VIDIO)
 		{
 			std::cout << std::string(50, '-').c_str() << std::endl;
-			VIDEOTAG* pvideotag = reinterpret_cast<VIDEOTAG*>(data);
+			FLVVIDEOTAG* pvideotag = reinterpret_cast<FLVVIDEOTAG*>(data);
 			std::cout << *pvideotag << std::endl;
 			std::cout << std::string(50, '-').c_str() << std::endl;
 			if (pvideotag->codecid == FLV_VIDEO_CODECID_AVC)
 			{
-				if (pvideotag->videopacket.avcvideopacket.type == AVC_PACKET_HEADER)
+				if (pvideotag->videopacket.avcvideopacket.avcpacketype == AVC_PACKET_HEADER)
 				{
 					AVCDecoderConfigurationRecordHeader* configheader =
-						reinterpret_cast<AVCDecoderConfigurationRecordHeader*>(pvideotag->videopacket.avcvideopacket.data);
+						reinterpret_cast<AVCDecoderConfigurationRecordHeader*>(pvideotag->videopacket.avcvideopacket.avcpacketdata);
 					std::cout << *configheader << std::endl;
 
 					SequenceParameterSet* sps =
 						reinterpret_cast<SequenceParameterSet*>(configheader->data);
-					int datasize = FINT16TOINT((sps->sequenceParameterSetLength));
+					int datasize = FLVINT16TOINT((sps->sequenceParameterSetLength));
 					out264.write(nalutag, 4);
 					out264.write(reinterpret_cast<char*>(sps->sequenceParameterSetNALUnit), datasize);
 					std::cout << *sps << std::endl;
 
 					PictureParameterSet* pps =
-						reinterpret_cast<PictureParameterSet*>(sps->sequenceParameterSetNALUnit + FINT16TOINT(sps->sequenceParameterSetLength));
-					datasize = FINT16TOINT((pps->pictureParameterSetLength));
+						reinterpret_cast<PictureParameterSet*>(sps->sequenceParameterSetNALUnit + FLVINT16TOINT(sps->sequenceParameterSetLength));
+					datasize = FLVINT16TOINT((pps->pictureParameterSetLength));
 					out264.write(nalutag, 4);
 					out264.write(reinterpret_cast<char*>(pps->pictureParameterSetNALUnit), datasize);
 					std::cout << *pps << std::endl;
 				}
-				else if (pvideotag->videopacket.avcvideopacket.type == AVC_PACKET_NALU)
+				else if (pvideotag->videopacket.avcvideopacket.avcpacketype == AVC_PACKET_NALU)
 				{
+#ifdef OUTPUTRAW
 					std::cout << "nalu : ";
 					std::ios::fmtflags f(std::cout.flags());
-					for (int i = 0; i < FINT24TOINT(tagheader.datalen) - offsetof(VIDEOTAG, videopacket.avcvideopacket.data); ++i)
+					for (int i = 0; i < FLVINT24TOINT(tagheader.datalen) - offsetof(FLVVIDEOTAG, videopacket.avcvideopacket.avcpacketdata); ++i)
 					{
-						std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned int>(pvideotag->videopacket.avcvideopacket.data[i]) << " ";
+						std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned int>(pvideotag->videopacket.avcvideopacket.avcpacketdata[i]) << " ";
 					}
 					std::cout.flags(f);
+#endif
 
-					GINT32* nalsize = reinterpret_cast<GINT32*>(&pvideotag->videopacket.avcvideopacket.data[0]);
-					int datasize = FINT32TOINT((*nalsize));
+					FLVINT32* nalsize = reinterpret_cast<FLVINT32*>(&pvideotag->videopacket.avcvideopacket.avcpacketdata[0]);
+					int datasize = FLVINT32TOINT((*nalsize));
 					out264.write(nalutag, 4);
-					out264.write(reinterpret_cast<char*>(&pvideotag->videopacket.avcvideopacket.data[0 + 4]), datasize);
+					out264.write(reinterpret_cast<char*>(&pvideotag->videopacket.avcvideopacket.avcpacketdata[0 + 4]), datasize);
 				}
-				else if (pvideotag->videopacket.avcvideopacket.type == AVC_PACKET_END)
+				else if (pvideotag->videopacket.avcvideopacket.avcpacketype == AVC_PACKET_END)
 				{
 					out264.close();
 					std::cout << "AVC end of sequence" << std::endl;
 				}
 			}
 		}
-		else if (tagheader.type == FLV_TAG_TYPE_AUDIO)
+		else if (tagheader.flvtagtype == FLV_TAG_TYPE_AUDIO)
 		{
 			std::cout << std::string(50, '-').c_str() << std::endl;
 			AUDIOTAG* paudiotag = reinterpret_cast<AUDIOTAG*>(data);
@@ -116,25 +126,28 @@ int main(int argc, char* argv[])
 			{
 				if (paudiotag->audiopacket.aacaudiopacket.aacpackettype == AAC_PACKET_TYPE_HEAD)
 				{
-					AudioSpecificConfig* pconfig = 
+					AudioSpecificConfig* pconfig =
 						reinterpret_cast<AudioSpecificConfig*>(paudiotag->audiopacket.aacaudiopacket.data);
-					auto index = FSAMPLEFREQUENCYINDEX((*pconfig));
-					std::cout << pconfig->AudioObjectType;
-					/*auto audioObjectType = (pconfig->data[0] & 0xF8) >> 3;
-					auto samplingFrequencyIndex = ((pconfig->data[0] & 0x7) << 1) | (pconfig->data[1] >> 7);
-					auto channelConfiguration = (pconfig->data[1] >> 3) & 0x0F;*/
+					std::cout << *pconfig << std::endl;
+					set_channel_configuration(adts, pconfig->ChannelConfiguration);
+					adts.sampling_frequency_index = FVLSAMPLEFREQUENCYINDEX((*pconfig));
+					adts.profile = pconfig->AudioObjectType - 1;
 				}
 				else if (paudiotag->audiopacket.aacaudiopacket.aacpackettype == AAC_PACKET_TYPE_RAW)
 				{
+					auto datasize = FLVINT24TOINT(tagheader.datalen) - offsetof(AUDIOTAG, audiopacket.aacaudiopacket.data);
+#ifdef OUTPUTRAW
 					std::ios::fmtflags f(std::cout.flags());
-					for (int i = 0; i < FINT24TOINT(tagheader.datalen) - offsetof(AUDIOTAG, audiopacket.aacaudiopacket.data); ++i)
+					for (int i = 0; i < datasize; ++i)
 					{
 						std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned int>(paudiotag->audiopacket.aacaudiopacket.data[i]) << " ";
 					}
 					std::cout.flags(f);
+#endif
 
-					outaac.write(reinterpret_cast<char*>(paudiotag->audiopacket.aacaudiopacket.data), FINT24TOINT(tagheader.datalen) - offsetof(AUDIOTAG, audiopacket.aacaudiopacket.data));
-
+					set_aac_frame_length(adts, datasize + sizeof(adts));
+					outaac.write(reinterpret_cast<char*>(&adts), sizeof(adts));
+					outaac.write(reinterpret_cast<char*>(paudiotag->audiopacket.aacaudiopacket.data), datasize);
 				}
 			}
 		}

@@ -35,9 +35,10 @@ uint16_t get_aac_frame_length(const ADTS& adts)
 }
 void set_aac_frame_length(ADTS& adts, uint16_t aac_frame_length)
 {
-	adts.aac_frame_lengthH = aac_frame_length >> 11 & 0x03;
-	adts.aac_frame_lengthM = aac_frame_length >> 3 & 0x0f;
-	adts.aac_frame_lengthL = aac_frame_length & 0x07;
+	adts.aac_frame_lengthH = (aac_frame_length >> 11) & 0x03;
+	auto test = aac_frame_length >> 3;
+	adts.aac_frame_lengthM = (aac_frame_length >> 3) & 0xff;
+	adts.aac_frame_lengthL = (aac_frame_length) & 0x07;
 }
 
 uint16_t get_adts_buffer_fullness(const ADTS& adts)

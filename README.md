@@ -136,14 +136,10 @@ Analysis of audio and video protocols
 - B帧: 双向预测内插编码帧，则要参考其前⼀个I或者P帧及其后⾯的⼀个P帧来⽣成⼀张完整的图⽚。  
 - 发I帧之前，⾄少要发⼀次SPS和PPS。 
 
-### H264码流分层
-
 ![H.264码流分层结构](/images/H.264码流分层结构.png)
 
 * NAL层，视频数据网络抽象层（Network Abstraction Layer）
 * VCL层，视频数据编码层（Video Coding Layer）
-
-### 码流基本概念
 
 ![RBSP与SODB](/images/RBSP与SODB.png)
 
@@ -183,8 +179,6 @@ Analysis of audio and video protocols
 
 ## AAC（高级音频编码）
 
-### AAC格式
-
 ![AAC](/images/AAC.png)
 
 ![ADIF](/images/ADIF.png)
@@ -218,6 +212,164 @@ Analysis of audio and video protocols
     其⼀为固定头信息，紧接着是可变头信息。固定头信息中的数据每⼀帧都相同，⽽可变头信息则在帧与帧之间可变。
 
 * ADTS可以在任意帧解码，也就是说它每⼀帧都有头信息。ADIF只有⼀个统⼀的头，所以必须得到所有的数据后解码。
+
+## FLV
+
+![flv文件结构](/images/flv文件结构.png)
+
+![flv详细文件结构](/images/flv详细文件结构.png)
+
+- FLV(Flash Video)是Adobe公司推出的⼀种流媒体格式，由于其封装后的⾳视频⽂件体积⼩、封装简单等特点，⾮常适合于互联⽹上使⽤。⽬前主流的视频⽹站基本都⽀持FLV。  
+
+- FLV封装格式是由⼀个⽂件头(file header)和 ⽂件体(file Body)组成。其中，FLV body由⼀对对的(Previous Tag Size字段 + tag)组成。Previous Tag Size字段 排列在Tag之前，占⽤4个字节。Previous Tag Size记录了前⾯⼀个Tag的⼤⼩，⽤于逆向读取处理。FLV header后的第⼀个Pervious Tag Size的值为0。
+
+- FLV header 由如下字段组成，其中前三个字节内容固定是*FLV*，最后4个字节内容固定是9（对*FLV*版本1来说）
+
+    | 字段              | 字段类型 | 字段含义                        |
+    | :---------------- | :------: | :------------------------------ |
+    | Signature         |   UI8    | 签名，固定为'F' (0x46)          |
+    | Signature         |   UI8    | 签名，固定为'L' (0x4c)          |
+    | Signature         |   UI8    | 签名，固定为'V' (0x56)          |
+    | Version           |   UI8    | 版本，比如 0x01 表示 FLV 版本 1 |
+    | TypeFlagsReserved |  UB[5]   | 全为0                           |
+    | TypeFlagsAudio    |  UB[1]   | 1表示有audio tag，0表示没有     |
+    | TypeFlagsReserved |  UB[1]   | 全为0                           |
+    | TypeFlagsVideo    |  UB[1]   | 1表示有video tag，0表示没有     |
+    | DataOffset        |   UI32   | FLV header的大小，单位是字节    |
+
+- FLV file body 很有规律，由一系列的*TagSize*和*Tag* 组成，其中*PreviousTagSize0*总是为0；*tag*由*tag header*、*tag body*组成；对*FLV*版本1，*tag header*固定为11个字节，因此，*PreviousTagSize*（除第1个）的值为 11 + 前一个*tag*的*tag body*的大小；
+
+    | 字段               | 字段类型 | 字段含义                        |
+    | :----------------- | :------: | :------------------------------ |
+    | PreviousTagSize0   |   UI32   | 总是0                           |
+    | Tag1               |  FLVTAG  | 第1个tag                        |
+    | PreviousTagSize1   |   UI32   | 前一个tag的大小，包括tag header |
+    | Tag2               |  FLVTAG  | 第2个tag                        |
+    | ...                |   ...    | ...                             |
+    | PreviousTagSizeN-1 |   UI32   | 第N-1个tag的大小                |
+    | TagN               |  FLVTAG  | 第N个tag                        |
+    | PreviousTagSizeN   |   UI32   | 第N个tag的大小，包含tag header  |
+
+- FLV tag 由*tag header*+*tag body*组成。
+    *tag header*如下，总共占据11个字节：
+
+    | 字段              |     字段类型      | 字段含义                                                     |
+    | :---------------- | :---------------: | :----------------------------------------------------------- |
+    | TagType           |        UI8        | tag类型：<br>8：audio<br>9：video<br>18：script data<br>其他：保留 |
+    | DataSize          |       UI24        | tag body的大小                                               |
+    | Timestamp         |       UI24        | 相对于第一个tag的时间戳（单位是毫秒）第一个tag的Timestamp为0 |
+    | TimestampExtended |        UI8        | 时间戳的扩展字段，当 Timestamp 3个字节不够时，会启用这个字段，代表高8位 |
+    | StreamID          |       UI24        | 总是0                                                        |
+    | Data              | 取决于根据TagType | TagType=8，则为AUDIODATA<br>TagType=9，则为VIDEODATA<br>TagType=18，则为SCRIPTDATAOBJECT |
+
+- Tag⼀般可以分为3种类型：脚本(帧)数据类型、⾳频数据类型、视频数据。FLV数据以⼤端序进⾏存储，在解析时需要注意。
+
+![flv解析过程](/images/flv解析过程.png)
+
+- ⼀个FLV⽂件，每种类型的tag都属于⼀个流，也就是⼀个flv⽂件最多只有⼀个⾳频流，⼀个视频流，不存在多个独⽴的⾳视频流在⼀个⽂件的情况。
+
+- flv⽂件中Timestamp和TimestampExtended拼出来的是dts。也就是解码时间。Timestamp和TimestampExtended拼出来dts单位为ms。(如果不存在B帧，当然dts等于pts)。
+
+- Script data脚本数据就是描述视频或⾳频的信息的数据，如宽度、⾼度、时间等等，⼀个⽂件中通常只有⼀个元数据，⾳频tag和视频tag就是⾳视频信息了，采样、声道、频率，编码等信息。 
+
+- **Script Tag Data结构(脚本类型、帧类型) **
+
+    ![amf](/images/amf.png)
+    
+    * 该类型Tag⼜被称为MetaData Tag,存放⼀些关于FLV视频和⾳频的元信息，⽐如：duration、width、height等。通常该类型Tag会作为FLV⽂件的第⼀个tag，并且只有⼀个，跟在File Header后。
+    
+    * AMF包中第一个字节为类型标识：
+    
+        * Number 0×00;
+    
+        * Boolean 0×01;
+    
+        * String 0×02;
+    
+        * Object 0×03;
+    
+        * MovieClip 0×04;
+    
+        * Null 0×05;
+    
+        * Undefined 0×06;
+    
+        * Reference 0×07;
+    
+        * ECMAArray 0×08;
+    
+        * ObjectEnd 0×09;
+    
+        * StrictArray 0x0a;
+    
+        * Date 0x0b;
+    
+        * LongString 0x0c;
+    
+        * Unsupported 0x0d;
+    
+        * Recordset 0x0e;
+    
+        * XMLObject 0x0f;
+    
+        * TypedObject(Class) 0×10;
+    
+* **Audio Tag Data结构(⾳频类型)  **
+
+    - *Audio tags*定义如下所示：
+
+        | 字段        |        字段类型         | 字段含义                                                     |
+    | :---------- | :---------------------: | :----------------------------------------------------------- |
+        | SoundFormat |          UB[4]          | 音频格式，重点关注 10 = AAC<br>0 = Linear PCM, platform endian<br>1 = ADPCM<br>2 = MP3<br>3 = Linear PCM, little endian<br>4 = Nellymoser 16-kHz mono<br>5 = Nellymoser 8-kHz mono<br>6 = Nellymoser<br>7 = G.711 A-law logarithmic PCM<br>8 = G.711 mu-law logarithmic PCM<br>9 = reserved<br>10 = AAC<br>11 = Speex<br>14 = MP3 8-Khz<br>15 = Device-specific sound |
+    | SoundRate   |          UB[2]          | 采样率，对AAC来说，永远等于3<br>0 = 5.5-kHz<br>1 = 11-kHz<br>2 = 22-kHz<br>3 = 44-kHz |
+        | SoundSize   |          UB[1]          | 采样精度，对于压缩过的音频，永远是16位<br>0 = snd8Bit<br>1 = snd16Bit |
+        | SoundType   |          UB[1]          | 声道类型，对Nellymoser来说，永远是单声道；对AAC来说，永远是双声道；<br>0 = sndMono 单声道<br>1 = sndStereo 双声道 |
+        | SoundData   | UI8[size of sound data] | 如果是AAC，则为 AACAUDIODATA；其他请参考规范；               |
+    
+        *AACAUDIODATA*
+        当*SoundFormat*为10时，表示音频采AAC进行编码，此时，*SoundData*的定义如下：
+    
+        | 字段          | 字段类型 | 字段含义                                                     |
+        | :------------ | :------: | :----------------------------------------------------------- |
+        | AACPacketType |   UI8    | 0: AAC sequence header<br>1: AAC raw                         |
+        | Data          |  UI8[n]  | 如果AACPacketType为0，则为AudioSpecificConfig；如果AACPacketType为1，则为AAC帧数据 |
+    
+        *AudioSpecificConfig*
+    
+        | 字段                   | 字段类型 | 字段含义                                           |
+        | :--------------------- | :------: | :------------------------------------------------- |
+        | AudioObjectType        |  UB[5]   | 编码器类型，比如2表示AAC-LC                        |                                                |
+        | SamplingFrequencyIndex |  UB[4]   | 采样率索引值，比如4表示44100                       |
+        | ChannelConfiguration   |  UB[4]   | 声道配置，比如2代表双声道，front-left, front-right |
+        | AOT Specific Config    |  UB[n]   |                                                    |
+    
+    * ⾳频Tag Data区域开始的第⼀个字节包含了⾳频数据的参数信息，第⼆个字节开始为⾳频流数据。（这两个字节属于tag的data部分，不是header部分）。
+    
+    * 第⼆个字节开始为⾳频数据（需要判断该数据是真正的⾳频数据，还是⾳频config信息）。
+    
+        ![aac audio data](/images/aac audio data.png)
+    
+* **Video Tag Data结构(视频类型) ** 
+
+    - *Video tags*定义如下：
+
+        | 字段      |   字段类型    | 字段含义                                                     |
+        | :-------- | :-----------: | :----------------------------------------------------------- |
+        | FrameType |     UB[4]     | 重点关注1、2：<br>1: keyframe (for AVC, a seekable frame) —— 即H.264的IDR帧；<br>2: inter frame (for AVC, a non- seekable frame) —— H.264的普通I帧；<br>3: disposable inter frame (H.263 only)<br>4: generated keyframe (reserved for server use only)<br>5: video info/command frame |
+        | CodecID   |     UB[4]     | 编解码器，主要关注 7（AVC）<br>1: JPEG (currently unused)<br>2: Sorenson H.263<br>3: Screen video<br>4: On2 VP6<br>5: On2 VP6 with alpha channel<br>6: Screen video version 2<br>7: AVC |
+        | VideoData | 取决于CodecID | 实际的媒体类型，主要关注 7:AVCVIDEOPACKE<br>2: H263VIDEOPACKET<br>3: SCREENVIDEOPACKET<br>4: VP6FLVVIDEOPACKET<br>5: VP6FLVALPHAVIDEOPACKET<br>6: SCREENV2VIDEOPACKET<br>7: AVCVIDEOPACKE |
+
+        *AVCVIDEOPACKE*当*CodecID*为7时，*VideoData*为 *AVCVIDEOPACKE*，也即*H.264*媒体数据。
+        *AVCVIDEOPACKE*的定义如下：
+
+        | 字段            | 字段类型 | 字段含义                                                     |
+        | :-------------- | :------: | :----------------------------------------------------------- |
+        | AVCPacketType   |   UI8    | 0: AVC sequence header<br>1: AVC NALU<br>2: AVC end of sequence |
+        | CompositionTime |   SI24   | 如果AVCPacketType=1，则为时间cts偏移量；否则，为0。当B帧的存在时，视频解码呈现过程中，dts、pts可能不同，cts的计算公式为 pts - dts/90，单位为毫秒；如果B帧不存在，则cts固定为0。 |
+        | Data            |  UI8[n]  | 1、如果如果AVCPacketType=0，则为AVCDecoderConfigurationRecord，H.264 视频解码所需要的参数集（SPS、PPS）<br>2、如果AVCPacketType=1，则为NALU（一个或多个）<br>3、如果AVCPacketType=2，则为空 |
+
+    - 视频Tag Data开始的第⼀个字节包含视频数据的参数信息，第⼆个字节开始为视频流数据。
+    - CompositionTime 表示PTS相对于DTS的偏移值， 在每个视频tag的第14~16字节。显示时间(pts) = 解码时间（tag的第5~8字节） + CompositionTime，CompositionTime的单位也是ms。
 
 ## FFmpeg
 
