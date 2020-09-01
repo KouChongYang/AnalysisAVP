@@ -43,28 +43,28 @@ int main(int argc, char* argv[])
 			datalen += (step > 3 ? step - 3 : 0);
 			if (datalen != 0)
 			{
-				std::cout << "nalu size : " << datalen - 1 << std::endl;
+				std::cout << std::string(50, '*').c_str() << std::endl;
+				std::cout << "nalu size : " << datalen << std::endl;
 				in.seekg(-naluflagsize - datalen, std::ios::cur);
 
-				if (!in.read(reinterpret_cast<char*>(&c), 1))
+				unsigned char* naludata = static_cast<unsigned char*>(malloc(datalen));
+				if (!in.read(reinterpret_cast<char*>(naludata), datalen))
 					break;
-				std::cout << std::string(50, '*').c_str() << std::endl;
-				NALHEADER* pnalheader = reinterpret_cast<NALHEADER*>(&c);
+
+				NALHEADER* pnalheader = reinterpret_cast<NALHEADER*>(naludata);
 				std::cout << *pnalheader << std::endl;
 
-				in.seekg(-1, std::ios::cur);
 				std::ios::fmtflags f(std::cout.flags());
 				for (int i = 0; i < datalen; ++i)
 				{
-					in.read(reinterpret_cast<char*>(&c), 1);
-					std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned int>(c) << " ";
+					std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<unsigned int>(naludata[i]) << " ";
 				}
 				std::cout << std::endl;
 				std::cout.flags(f);
 				in.seekg(naluflagsize, std::ios::cur);
 			}
 
-			datalen = 1;
+			datalen = 0;
 			step = 0;
 		}
 		else
