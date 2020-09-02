@@ -126,6 +126,8 @@ int main(int argc, char* argv[])
 	}
 	av_bitstream_filter_close(aacbsfc);
 
+	av_packet_free(&pkt);
+
 	ret = av_write_trailer(outctx);
 
 	avformat_close_input(&vfmt);
