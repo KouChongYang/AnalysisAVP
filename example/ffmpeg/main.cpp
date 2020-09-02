@@ -1,8 +1,8 @@
 ﻿/*
- * @Author: gongluck 
- * @Date: 2020-09-02 23:40:40 
- * @Last Modified by:   gongluck 
- * @Last Modified time: 2020-09-02 23:40:40 
+ * @Author: gongluck
+ * @Date: 2020-09-02 23:40:40
+ * @Last Modified by:   gongluck
+ * @Last Modified time: 2020-09-02 23:40:40
  */
 
 #include <iostream>
@@ -102,8 +102,11 @@ int main(int argc, char* argv[])
 	while (av_read_frame(vfmt, pkt) == 0)
 	{
 		pkt->stream_index = vstream->index;
-		static int64_t pts = 0;
-		pkt->pts = pkt->dts = av_rescale_q(pts++, { 4, 95 }, outctx->streams[vstream->index]->time_base);
+		if (pkt->pts == AV_NOPTS_VALUE)
+		{
+			static int64_t pts = 0;
+			pkt->pts = pkt->dts = av_rescale_q(pts++, { 4, 95 }, outctx->streams[vstream->index]->time_base);
+		}
 		pkt->pos = -1;
 		ret = av_interleaved_write_frame(outctx, pkt);
 		av_packet_unref(pkt);
@@ -124,6 +127,10 @@ int main(int argc, char* argv[])
 	av_bitstream_filter_close(aacbsfc);
 
 	ret = av_write_trailer(outctx);
+
+	avformat_close_input(&vfmt);
+	avformat_close_input(&afmt);
+	avformat_free_context(outctx);
 
 	return 0;
 }
