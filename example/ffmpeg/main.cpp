@@ -48,9 +48,9 @@ int main(int argc, char* argv[])
 
 	std::cout << "ffmpeg demo" << std::endl;
 
-	std::cout << "Usage : " << "thisfilename h264file aacfile" << std::endl;
+	std::cout << "Usage : " << "thisfilename h264file aacfile outfile" << std::endl;
 
-	if (argc < 3)
+	if (argc < 4)
 	{
 		std::cerr << "please see the usage message." << std::endl;
 		return -1;
@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	std::ofstream outfile("out.mp4", std::ios::binary);
+	std::ofstream outfile(argv[3], std::ios::binary);
 	AVFormatContext* outctx = nullptr;
 	auto ret = avformat_alloc_output_context2(&outctx, nullptr, "mp4", nullptr);
 	auto iobuffer = static_cast<unsigned char*>(av_malloc(bufsize));
