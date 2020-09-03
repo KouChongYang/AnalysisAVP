@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <fstream>
 #include <thread>
+#include <mutex>
 
 extern "C"
 {
@@ -112,45 +113,81 @@ int main(int argc, char* argv[])
 	}
 #endif
 
+	auto t = clock();
 	ret = avformat_write_header(outctx, &dict);
 
-	auto pkt = av_packet_alloc();
-	av_init_packet(pkt);
-	while (av_read_frame(vfmt, pkt) == 0)
-	{
-		pkt->stream_index = vstream->index;
-		if (pkt->pts == AV_NOPTS_VALUE)
+	std::mutex mutex;
+
+	bool vend = false;
+	std::thread vth([&] {
+		auto pkt = av_packet_alloc();
+		av_init_packet(pkt);
+		while (av_read_frame(vfmt, pkt) == 0)
 		{
-			static int64_t pts = 0;
-			pkt->pts = pkt->dts = av_rescale_q(pts++, { 4, 95 }, outctx->streams[vstream->index]->time_base);
+			pkt->stream_index = vstream->index;
+			if (pkt->pts == AV_NOPTS_VALUE)
+			{
+				static int64_t pts = 0;
+				pkt->pts = pkt->dts = av_rescale_q(pts++, { 4, 95 }, outctx->streams[vstream->index]->time_base);
+			}
+			pkt->pos = -1;
+			//std::cout << "vpts : " << pkt->pts << std::endl;
+			{
+				std::lock_guard<std::mutex> _lock(mutex);
+				ret = av_interleaved_write_frame(outctx, pkt);
+			}
+			av_packet_unref(pkt);
+			std::this_thread::sleep_for(std::chrono::nanoseconds(1));
 		}
-		pkt->pos = -1;
-		ret = av_interleaved_write_frame(outctx, pkt);
-		av_packet_unref(pkt);
-		std::this_thread::sleep_for(std::chrono::nanoseconds(1));
-	}
+		av_packet_free(&pkt);
+		vend = true;
+	});
 
+	bool aend = false;
+	std::thread ath([&] {
 #ifndef NOAAC
-	auto aacbsfc = av_bitstream_filter_init("aac_adtstoasc");
-	while (av_read_frame(afmt, pkt) == 0)
-	{
-		ret = av_bitstream_filter_filter(aacbsfc, afmt->streams[0]->codec, nullptr, &pkt->data, &pkt->size, pkt->data, pkt->size, 0);
-		pkt->stream_index = astream->index;
-		static int64_t pts = 0;
-		pkt->pts = pkt->dts = av_rescale_q(pts, afmt->streams[0]->time_base, outctx->streams[astream->index]->time_base);
-		pts += pkt->duration;
-		pkt->duration = 0;//next_pts - this_pts
-		pkt->pos = -1;
-		ret = av_interleaved_write_frame(outctx, pkt);
-		av_packet_unref(pkt);
-		std::this_thread::sleep_for(std::chrono::nanoseconds(1));
-	}
-	av_bitstream_filter_close(aacbsfc);
+		auto pkt = av_packet_alloc();
+		av_init_packet(pkt);
+		auto aacbsfc = av_bitstream_filter_init("aac_adtstoasc");
+		while (av_read_frame(afmt, pkt) == 0)
+		{
+			ret = av_bitstream_filter_filter(aacbsfc, afmt->streams[0]->codec, nullptr, &pkt->data, &pkt->size, pkt->data, pkt->size, 0);
+			pkt->stream_index = astream->index;
+			static int64_t pts = 0;
+			pkt->pts = pkt->dts = av_rescale_q(pts, afmt->streams[0]->time_base, outctx->streams[astream->index]->time_base);
+			pts += pkt->duration;
+			pkt->duration = 0;//next_pts - this_pts
+			pkt->pos = -1;
+			//std::cout << "apts : " << pkt->pts << std::endl;
+			{
+				std::lock_guard<std::mutex> _lock(mutex);
+				ret = av_interleaved_write_frame(outctx, pkt);
+			}
+			av_packet_unref(pkt);
+			std::this_thread::sleep_for(std::chrono::nanoseconds(1));
+		}
+		av_bitstream_filter_close(aacbsfc);
+		av_packet_free(&pkt);
+		aend = true;
 #endif
+	});
 
-	av_packet_free(&pkt);
+	while (!vend || !aend)
+	{
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
+	if (vth.joinable())
+	{
+		vth.join();
+	}
+	if (ath.joinable())
+	{
+		ath.join();
+	}
 
 	ret = av_write_trailer(outctx);
+
+	std::cout << "used time " << difftime(clock(), t) << "ms" << std::endl;
 
 	if (vfmt->pb != nullptr)
 	{
