@@ -15,7 +15,7 @@ extern "C"
 #include "libavcodec/avcodec.h"
 }
 
-const int bufsize = 1024;
+const int bufsize = 1024000;
 
 int read_packet(void* opaque, uint8_t* buf, int buf_size)
 {
@@ -28,12 +28,14 @@ int write_packet(void* opaque, uint8_t* buf, int buf_size)
 {
 	std::ofstream* outfile = static_cast<std::ofstream*>(opaque);
 	outfile->write((char*)buf, buf_size);
+	//std::cout << "write " << buf_size << std::endl;
 	return buf_size;
 }
 int64_t seek_packet(void* opaque, int64_t offset, int whence)
 {
-	std::ofstream* outfile = static_cast<std::ofstream*>(opaque);
-	outfile->seekp(offset, whence);
+	//std::ofstream* outfile = static_cast<std::ofstream*>(opaque);
+	//outfile->seekp(offset, whence);
+	//std::cout << "seek " << offset << std::endl;
 	return 0;
 }
 
@@ -70,6 +72,8 @@ int main(int argc, char* argv[])
 	auto avio = avio_alloc_context(iobuffer, bufsize, 1, &outfile, nullptr, write_packet, seek_packet);
 	outctx->pb = avio;
 	outctx->flags = AVFMT_FLAG_CUSTOM_IO;
+	AVDictionary* dict = nullptr;
+	ret = av_dict_set(&dict, "movflags", "faststart+delay_moov", 0);
 
 	auto vfmt = avformat_alloc_context();
 	auto viobuffer = static_cast<unsigned char*>(av_malloc(bufsize));
@@ -82,6 +86,10 @@ int main(int argc, char* argv[])
 	auto vstream = avformat_new_stream(outctx, nullptr);
 	ret = avcodec_copy_context(outctx->streams[vstream->index]->codec, vfmt->streams[0]->codec);
 	ret = avcodec_parameters_copy(outctx->streams[vstream->index]->codecpar, vfmt->streams[0]->codecpar);
+	if (outctx->oformat->flags & AVFMT_GLOBALHEADER)
+	{
+		outctx->streams[vstream->index]->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+	}
 
 	auto afmt = avformat_alloc_context();
 	auto aiobuffer = static_cast<unsigned char*>(av_malloc(bufsize));
@@ -94,8 +102,12 @@ int main(int argc, char* argv[])
 	auto astream = avformat_new_stream(outctx, nullptr);
 	ret = avcodec_copy_context(outctx->streams[astream->index]->codec, afmt->streams[0]->codec);
 	ret = avcodec_parameters_copy(outctx->streams[astream->index]->codecpar, afmt->streams[0]->codecpar);
+	if (outctx->oformat->flags & AVFMT_GLOBALHEADER)
+	{
+		outctx->streams[astream->index]->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+	}
 
-	ret = avformat_write_header(outctx, nullptr);
+	ret = avformat_write_header(outctx, &dict);
 
 	auto pkt = av_packet_alloc();
 	av_init_packet(pkt);
@@ -120,6 +132,7 @@ int main(int argc, char* argv[])
 		static int64_t pts = 0;
 		pkt->pts = pkt->dts = av_rescale_q(pts, afmt->streams[0]->time_base, outctx->streams[astream->index]->time_base);
 		pts += pkt->duration;
+		pkt->duration = 0;//next_pts - this_pts
 		pkt->pos = -1;
 		ret = av_interleaved_write_frame(outctx, pkt);
 		av_packet_unref(pkt);
@@ -130,8 +143,20 @@ int main(int argc, char* argv[])
 
 	ret = av_write_trailer(outctx);
 
+	if (vfmt->pb != nullptr)
+	{
+		avio_context_free(&vfmt->pb);
+	}
 	avformat_close_input(&vfmt);
+	if (afmt->pb != nullptr)
+	{
+		avio_context_free(&afmt->pb);
+	}
 	avformat_close_input(&afmt);
+	if (outctx->pb != nullptr)
+	{
+		avio_context_free(&outctx->pb);
+	}
 	avformat_free_context(outctx);
 
 	return 0;
