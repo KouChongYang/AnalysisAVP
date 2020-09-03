@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <thread>
 
 extern "C"
 {
@@ -15,6 +16,7 @@ extern "C"
 #include "libavcodec/avcodec.h"
 }
 
+//#define NOAAC
 const int bufsize = 1024000;
 
 int read_packet(void* opaque, uint8_t* buf, int buf_size)
@@ -29,13 +31,14 @@ int write_packet(void* opaque, uint8_t* buf, int buf_size)
 	std::ofstream* outfile = static_cast<std::ofstream*>(opaque);
 	outfile->write((char*)buf, buf_size);
 	//std::cout << "write " << buf_size << std::endl;
+	outfile->flush();
 	return buf_size;
 }
 int64_t seek_packet(void* opaque, int64_t offset, int whence)
 {
-	//std::ofstream* outfile = static_cast<std::ofstream*>(opaque);
-	//outfile->seekp(offset, whence);
-	//std::cout << "seek " << offset << std::endl;
+	std::ofstream* outfile = static_cast<std::ofstream*>(opaque);
+	outfile->seekp(offset, whence);
+	std::cout << "seek " << offset << std::endl;
 	return 0;
 }
 
@@ -99,6 +102,7 @@ int main(int argc, char* argv[])
 	ret = avformat_open_input(&afmt, nullptr, nullptr, nullptr);
 	ret = avformat_find_stream_info(afmt, nullptr);
 
+#ifndef NOAAC
 	auto astream = avformat_new_stream(outctx, nullptr);
 	ret = avcodec_copy_context(outctx->streams[astream->index]->codec, afmt->streams[0]->codec);
 	ret = avcodec_parameters_copy(outctx->streams[astream->index]->codecpar, afmt->streams[0]->codecpar);
@@ -106,6 +110,7 @@ int main(int argc, char* argv[])
 	{
 		outctx->streams[astream->index]->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 	}
+#endif
 
 	ret = avformat_write_header(outctx, &dict);
 
@@ -122,8 +127,10 @@ int main(int argc, char* argv[])
 		pkt->pos = -1;
 		ret = av_interleaved_write_frame(outctx, pkt);
 		av_packet_unref(pkt);
+		std::this_thread::sleep_for(std::chrono::nanoseconds(1));
 	}
 
+#ifndef NOAAC
 	auto aacbsfc = av_bitstream_filter_init("aac_adtstoasc");
 	while (av_read_frame(afmt, pkt) == 0)
 	{
@@ -136,8 +143,10 @@ int main(int argc, char* argv[])
 		pkt->pos = -1;
 		ret = av_interleaved_write_frame(outctx, pkt);
 		av_packet_unref(pkt);
+		std::this_thread::sleep_for(std::chrono::nanoseconds(1));
 	}
 	av_bitstream_filter_close(aacbsfc);
+#endif
 
 	av_packet_free(&pkt);
 
