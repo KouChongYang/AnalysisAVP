@@ -86,6 +86,7 @@ int main(int argc, char* argv[])
 	vfmt->flags = AVFMT_FLAG_CUSTOM_IO;
 	ret = avformat_open_input(&vfmt, nullptr, nullptr, nullptr);
 	ret = avformat_find_stream_info(vfmt, nullptr);
+	av_dump_format(vfmt, -1, nullptr, 0);
 
 	auto vstream = avformat_new_stream(outctx, nullptr);
 	ret = avcodec_copy_context(outctx->streams[vstream->index]->codec, vfmt->streams[0]->codec);
@@ -102,6 +103,7 @@ int main(int argc, char* argv[])
 	afmt->flags = AVFMT_FLAG_CUSTOM_IO;
 	ret = avformat_open_input(&afmt, nullptr, nullptr, nullptr);
 	ret = avformat_find_stream_info(afmt, nullptr);
+	av_dump_format(afmt, -1, nullptr, 0);
 
 #ifndef NOAAC
 	auto astream = avformat_new_stream(outctx, nullptr);
@@ -115,6 +117,7 @@ int main(int argc, char* argv[])
 
 	auto t = clock();
 	ret = avformat_write_header(outctx, &dict);
+	av_dump_format(outctx, -1, nullptr, 1);
 
 	std::mutex mutex;
 
@@ -128,7 +131,8 @@ int main(int argc, char* argv[])
 			if (pkt->pts == AV_NOPTS_VALUE)
 			{
 				static int64_t pts = 0;
-				pkt->pts = pkt->dts = av_rescale_q(pts++, { 4, 95 }, outctx->streams[vstream->index]->time_base);
+				static AVRational oritimebase = { vfmt->streams[0]->codec->framerate.den, vfmt->streams[0]->codec->framerate.num };
+				pkt->pts = pkt->dts = av_rescale_q(pts++, oritimebase, outctx->streams[vstream->index]->time_base);
 			}
 			pkt->pos = -1;
 			//std::cout << "vpts : " << pkt->pts << std::endl;
@@ -169,12 +173,14 @@ int main(int argc, char* argv[])
 		av_bitstream_filter_close(aacbsfc);
 		av_packet_free(&pkt);
 		aend = true;
+#else
+		aend = true;
 #endif
 	});
 
 	while (!vend || !aend)
 	{
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+		std::this_thread::sleep_for(std::chrono::nanoseconds(1));
 	}
 	if (vth.joinable())
 	{
@@ -206,4 +212,4 @@ int main(int argc, char* argv[])
 	avformat_free_context(outctx);
 
 	return 0;
-}
+	}
