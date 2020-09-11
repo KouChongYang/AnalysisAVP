@@ -601,69 +601,45 @@ avcodec_encode_video2();
 avcodec_encode_audio2();
 ```
 
-## SDL
+## SDL2
 
-### 编译
+### SDL子系统
 
-```shell
-configure --prefix=/build
-make -j 8
-make install
-```
+- SDL将功能分成下列数个子系统（subsystem）：
+    - SDL_INIT_TIMER：定时器
+    -  SDL_INIT_AUDIO：音频
+    -  SDL_INIT_VIDEO：视频
+    -  SDL_INIT_JOYSTICK：摇杆
+    -  SDL_INIT_HAPTIC：触摸屏
+    -  SDL_INIT_GAMECONTROLLER：游戏控制器
+    -  SDL_INIT_EVENTS：事件
+    -  SDL_INIT_EVERYTHING：包含上述所有选项
 
-### SDL API
+### SDL Window显示
 
-#### 基础
+- SDL视频显示函数
 
-```shell
-#include <SDL.h>
-SDL_Init();
-SDL_Quit();
-```
+  - SDL_Init()：初始化SDL系统
+  - SDL_CreateWindow()：创建窗口SDL_Window
+  - SDL_CreateRenderer()：创建渲染器SDL_Renderer
+  - SDL_CreateTexture()：创建纹理SDL_Texture
+  - SDL_UpdateTexture()：设置纹理的数据
+  - SDL_RenderCopy()：将纹理的数据拷贝给渲染器
+  - SDL_RenderPresent()：显示
+  - SDL_Delay()：工具函数，用于延时
+  - SDL_Quit()：退出SDL系统
 
-#### 渲染
-
-```shell
-SDL_CreateWindow();
-SDL_CreateRender();
-SDL_CreateTexture();
-SDL_SetRenderTarget();
-SDL_UpdateTexture();
-SDL_UpdateYUVTexture();
-SDL_RenderDrawColor();
-SDL_RenderDrawRect();
-SDL_RenderFillRect();
-SDL_RenderClear();
-SDL_RenderCopy();
-SDL_RenderPresent();
-SDL_Delay();
-SDL_DesttoyTexture();
-SDL_DestroyRenderer();
-SDL_DestroyWindow();
-```
-
-#### 事件
-
-```shell
-SDL_PollEvent();
-SDL_WaitEvent();
-SDL_PushEvent();
-```
-
-#### 线程
-
-```shell
-SDL_CreateThread();
-```
-
-#### 播放音频
-
-```shell
-SDL_OpenAudio();
-SDL_CloseAudio();
-SDL_PauseAudio();
-SDL_MixAudio();
-```
+- SDL数据结构
+    - SDL_Window 代表了一个“窗口”
+    - SDL_Renderer 代表了一个“渲染器”
+    - SDL_Texture 代表了一个“纹理”
+    - SDL_Rect 一个简单的矩形结构
+- SDL事件
+    - SDL_WaitEvent()：等待一个事件
+    - SDL_PushEvent()：发送一个事件
+    - SDL_PumpEvents()：将硬件设备产生的事件放入事件队列，用于读取事件，在调用该函数之前，必须调用SDL_PumpEvents搜集键盘等事件
+    - SDL_PeepEvents()：从事件队列提取一个事件
+    - SDL_Event：代表一个事件  
 
 ## WebRTC
 
