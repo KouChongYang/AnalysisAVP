@@ -7,18 +7,57 @@
 
 #define SDL_MAIN_HANDLED
 
-#define MY_QUIT SDL_USEREVENT+1
+#include <iostream>
+#include <fstream>
+#include "SDL.h"
+
+#define MY_QUIT		SDL_USEREVENT+1
+#define MY_REFRESH	SDL_USEREVENT+2
 
 const int WIDTH = 300;
 const int HEIGHT = 300;
 const int width = 10;
 const int height = 10;
 
-#include <iostream>
-#include "SDL.h"
+bool exitflag = false;
 
-int main()
+int mythread(void* param)
 {
+	while (!exitflag)
+	{
+		SDL_Event event;
+		event.type = MY_REFRESH;
+		SDL_PushEvent(&event);
+		SDL_Delay(100);
+	}
+
+	SDL_Event event;
+	event.type = MY_QUIT;
+	SDL_PushEvent(&event);
+
+	return 0;
+}
+
+int main(int argc, char* argv[])
+{
+	std::cout << "SDL2 demo" << std::endl;
+
+	std::cout << "Usage : " << "thisfilename YUVfile width height" << std::endl;
+
+	if (argc < 4)
+	{
+		std::cerr << "please see the usage message." << std::endl;
+		return -1;
+	}
+	std::ifstream yuv(argv[1], std::ios::binary);
+	if (yuv.fail())
+	{
+		std::cerr << "can not open file " << argv[1] << std::endl;
+		return -1;
+	}
+	auto yuvwidth = atoi(argv[2]);
+	auto yuvheight = atoi(argv[3]);
+
 	auto ret = SDL_Init(SDL_INIT_VIDEO);
 	SDL_Window* window = SDL_CreateWindow("SDL2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	auto renderer = SDL_CreateRenderer(window, -1, 0);
@@ -42,9 +81,13 @@ int main()
 		SDL_Delay(500);
 	}
 
-	bool exit = false;
+	auto yuvtexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, yuvwidth, yuvheight);
+	auto datasize = yuvwidth * yuvheight * 3 / 2;
+	auto yuvdata = static_cast<char*>(malloc(datasize));
+	auto th = SDL_CreateThread(mythread, nullptr, nullptr);
+
 	SDL_Event event = { 0 };
-	while (!exit)
+	while (!exitflag)
 	{
 		ret = SDL_WaitEvent(&event);
 		switch (event.type)
@@ -79,15 +122,36 @@ int main()
 		case SDL_MOUSEMOTION:
 			std::cout << "mouse move " << event.button.x << ", " << event.button.y << std::endl;
 			break;
+		case MY_REFRESH:
+		{
+			yuv.read(yuvdata, datasize);
+			if (!yuv)
+			{
+				exitflag = true;
+				break;
+			}
+
+			SDL_UpdateTexture(yuvtexture, nullptr, yuvdata, yuvwidth);
+			SDL_RenderClear(renderer);
+			SDL_RenderCopy(renderer, yuvtexture, nullptr, nullptr);
+			SDL_RenderPresent(renderer);
+		}
+		break;
 		case MY_QUIT:
 			std::cout << "my quit envent." << std::endl;
-			exit = true;
+			exitflag = true;
 			break;
 		}
 	}
 
+	SDL_WaitThread(th, nullptr);
+	SDL_DestroyTexture(yuvtexture);
+	SDL_DestroyTexture(texture);
 	SDL_DestroyWindow(window);
+	SDL_DestroyRenderer(renderer);
 	SDL_Quit();
+
+	yuv.close();
 
 	return 0;
 }
