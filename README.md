@@ -626,23 +626,66 @@ avcodec_encode_audio2();
   - SDL_Quit()：退出SDL系统
 
 - SDL数据结构
+
     - SDL_Window 代表了一个“窗口”
     - SDL_Renderer 代表了一个“渲染器”
     - SDL_Texture 代表了一个“纹理”
     - SDL_Rect 一个简单的矩形结构
+
 - SDL事件
+
     - SDL_WaitEvent()：等待一个事件
     - SDL_PushEvent()：发送一个事件
     - SDL_PumpEvents()：将硬件设备产生的事件放入事件队列，用于读取事件，在调用该函数之前，必须调用SDL_PumpEvents搜集键盘等事件
     - SDL_PeepEvents()：从事件队列提取一个事件
     - SDL_Event：代表一个事件
+
 - SDL多线程
+
     - SDL线程创建： SDL_CreateThread
     - SDL线程等待： SDL_WaitThead
     - SDL互斥锁： SDL_CreateMutex/SDL_DestroyMutex
     - SDL锁定互斥： SDL_LockMutex/SDL_UnlockMutex
     - SDL条件变量(信号量)： SDL_CreateCond/SDL_DestoryCond
-    - SDL条件变量(信号量)等待/通知： SDL_CondWait/SDL_CondSingal  
+    - SDL条件变量(信号量)等待/通知： SDL_CondWait/SDL_CondSingal
+
+- SDL播放音频PCM
+
+    - 打开音频设备
+
+        ```C++
+        typedef struct SDL_AudioSpec {
+        int freq; // 音频采样率
+        SDL_AudioFormat format; // 音频数据格式
+        Uint8 channels; // 声道数: 1 单声道, 2 立体声
+        Uint8 silence; // 设置静音的值， 因为声音采样是有符号的， 所以0当然就是这个值
+        Uint16 samples; // 音频缓冲区中的采样个数，要求必须是2的n次
+        Uint16 padding; // 考虑到兼容性的一个参数
+        Uint32 size; // 音频缓冲区的大小，以字节为单位
+        SDL_AudioCallback callback; // 填充音频缓冲区的回调函数
+        void *userdata; // 用户自定义的数据
+        } SDL_AudioSpec;
+        
+        // desired：期望的参数。
+        // obtained：实际音频设备的参数，一般情况下设置为NULL即可。
+        int SDLCALL SDL_OpenAudio(SDL_AudioSpec* desired, SDL_AudioSpec* obtained);
+        ```
+
+    - SDL_AudioCallback
+
+        ```C++
+        // userdata： SDL_AudioSpec结构中的用户自定义数据，一般情况下可以不用。
+        // stream：该指针指向需要填充的音频缓冲区。
+        // len：音频缓冲区的大小（以字节为单位） 1024*2*2。
+        void (SDLCALL * SDL_AudioCallback) (void *userdata, Uint8 *stream, int len);
+        ```
+
+    - 播放音频数据
+
+        ```C++
+        // 当pause_on设置为0的时候即可开始播放音频数据。设置为1的时候，将会播放静音的值。
+        void SDLCALL SDL_PauseAudio(int pause_on);
+        ```
 
 ## WebRTC
 

@@ -2,7 +2,7 @@
  * @Author: gongluck
  * @Date: 2020-09-11 22:22:14
  * @Last Modified by: gongluck
- * @Last Modified time: 2020-09-12 00:05:16
+ * @Last Modified time: 2020-09-12 18:54:17
  */
 
 #define SDL_MAIN_HANDLED
@@ -37,14 +37,27 @@ int mythread(void* param)
 
 	return 0;
 }
+void SDLCALL mypcm(void* userdata, Uint8* stream, int len)
+{
+	auto pcm = static_cast<std::iostream*>(userdata);
+	auto buf = static_cast<char*>(malloc(len));
+	pcm->read(buf, len);
+	if (!pcm)
+	{
+		free(buf);
+		return;
+	}
+	memcpy(stream, buf, len);
+	free(buf);
+}
 
 int main(int argc, char* argv[])
 {
 	std::cout << "SDL2 demo" << std::endl;
 
-	std::cout << "Usage : " << "thisfilename YUVfile width height" << std::endl;
+	std::cout << "Usage : " << "thisfilename YUVfile width height PCMfile" << std::endl;
 
-	if (argc < 4)
+	if (argc < 5)
 	{
 		std::cerr << "please see the usage message." << std::endl;
 		return -1;
@@ -57,8 +70,14 @@ int main(int argc, char* argv[])
 	}
 	auto yuvwidth = atoi(argv[2]);
 	auto yuvheight = atoi(argv[3]);
+	std::ifstream pcm(argv[4], std::ios::binary);
+	if (pcm.fail())
+	{
+		std::cerr << "can not open file " << argv[4] << std::endl;
+		return -1;
+	}
 
-	auto ret = SDL_Init(SDL_INIT_VIDEO);
+	auto ret = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	SDL_Window* window = SDL_CreateWindow("SDL2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	auto renderer = SDL_CreateRenderer(window, -1, 0);
 	auto texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WIDTH, HEIGHT);
@@ -85,6 +104,17 @@ int main(int argc, char* argv[])
 	auto datasize = yuvwidth * yuvheight * 3 / 2;
 	auto yuvdata = static_cast<char*>(malloc(datasize));
 	auto th = SDL_CreateThread(mythread, nullptr, nullptr);
+
+	SDL_AudioSpec spec = { 0 };
+	spec.freq = 44100;
+	spec.format = AUDIO_S16SYS;
+	spec.channels = 2;
+	spec.silence = 0;
+	spec.samples = 1024;
+	spec.callback = mypcm;
+	spec.userdata = &pcm;
+	ret = SDL_OpenAudio(&spec, nullptr);
+	SDL_PauseAudio(0);
 
 	SDL_Event event = { 0 };
 	while (!exitflag)
@@ -149,9 +179,14 @@ int main(int argc, char* argv[])
 	SDL_DestroyTexture(texture);
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
+
+	SDL_PauseAudio(1);
+	SDL_CloseAudio();
+
 	SDL_Quit();
 
 	yuv.close();
+	free(yuvdata);
 
 	return 0;
 }
