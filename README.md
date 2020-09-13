@@ -179,37 +179,54 @@ Analysis of audio and video protocols
 
 ## AAC（高级音频编码）
 
-![AAC](/images/AAC.png)
-
 ![ADIF](/images/ADIF.png)
 
-* ADIF，音频数据交换格式（Audio Data Interchange Format）。这种格式的特征是可以确定的找到这个音频数据的开始，不需进行在音频数据流中间开始的解码，即它的解码必须在明确定义的开始处进行。故这种格式常用在磁盘文件中。
+- ADIF，音频数据交换格式（Audio Data Interchange Format）。这种格式的特征是可以确定的找到这个音频数据的开始，不需进行在音频数据流中间开始的解码，即它的解码必须在明确定义的开始处进行。故这种格式常用在磁盘文件中。
+
+    ![AAC](/images/AAC.png)
 
 ![ADTS](/images/ADTS.png)
 
-![ADTS的固定头信息](/images/ADTS的固定头信息.png)
+- ADTS，音频数据传输流（Audio Data Transport Stream）。这种格式的特征是它是一个有同步字的比特流，解码可以在这个流中任何位置开始。它的特征类似于mp3数据流格式。
 
-![ADTS的可变头信息](/images/ADTS的可变头信息.png)
+    ![ADTS的固定头信息](/images/ADTS的固定头信息.png)
 
-![audio object type](images/audio object type.png)
+    ![ADTS的可变头信息](/images/ADTS的可变头信息.png)
 
-- profile的值等于 Audio Object Type的值减1
+    - 每⼀帧的ADTS的头⽂件都包含了⾳频的采样率，声道，帧⻓度等信息，这样解码器才能解析读取。⼀般情况下ADTS的头信息都是7个字节，分为2部分：
 
-    - profile = MPEG-4 Audio Object Type - 1  
+        - adts_fixed_header();
 
-![Sampling Frequencies  ](/images/Sampling Frequencies.png)
+        - adts_variable_header();
+        - 其⼀为固定头信息，紧接着是可变头信息。固定头信息中的数据每⼀帧都相同，⽽可变头信息则在帧与帧之间可变。
 
-![channel configuration](/images/channel configuration.png)
-
-* ADTS，音频数据传输流（Audio Data Transport Stream）。这种格式的特征是它是一个有同步字的比特流，解码可以在这个流中任何位置开始。它的特征类似于mp3数据流格式。
-
-* 每⼀帧的ADTS的头⽂件都包含了⾳频的采样率，声道，帧⻓度等信息，这样解码器才能解析读取。⼀般情况下ADTS的头信息都是7个字节，分为2部分：
-
-    - adts_fixed_header();
-
-    - adts_variable_header();
-
-    其⼀为固定头信息，紧接着是可变头信息。固定头信息中的数据每⼀帧都相同，⽽可变头信息则在帧与帧之间可变。
+    - syncword ：同步头 总是0xFFF, all bits must be 1，代表着⼀个ADTS帧的开始 
+    
+    - ID：MPEG标识符，0标识MPEG-4，1标识MPEG-2
+    
+    - Layer：always: '00'
+    
+    - protection_absent：表示是否误码校验。Warning, set to 1 if there is no CRC and 0 if there is CRC
+    
+    - profile：表示使⽤哪个级别的AAC，如01 Low Complexity(LC)--- AAC LC。有些芯⽚只⽀持AAC LC。profile的值等于 Audio Object Type的值减1。profile = MPEG-4 Audio Object Type - 1  
+    
+        ![audio object type](images/audio object type.png)
+    
+    - sampling_frequency_index：表示使⽤的采样率下标，通过这个下标在Sampling Frequencies[ ]数组中查找得知采样率的值。  
+    
+        ![Sampling Frequencies  ](/images/Sampling Frequencies.png)
+    
+    - channel_configuration: 表示声道数，⽐如2表示⽴体声双声道
+    
+        ![channel configuration](/images/channel configuration.png)
+    
+    - frame_length : ⼀个ADTS帧的⻓度包括ADTS头和AAC原始流
+        - frame length, this value must include 7 or 9 bytes of header length:
+        - aac_frame_length = (protection_absent == 1 ? 7 : 9) + size(AACFrame)
+        - protection_absent=0时, header length=9bytes
+        - protection_absent=1时, header length=7bytes
+    - adts_buffer_fullness：0x7FF 说明是码率可变的码流。
+    - number_of_raw_data_blocks_in_frame：表示ADTS帧中有number_of_raw_data_blocks_in_frame + 1个AAC原始帧。所以说number_of_raw_data_blocks_in_frame == 0 表示说ADTS帧中有⼀个AAC数据块。
 
 * ADTS可以在任意帧解码，也就是说它每⼀帧都有头信息。ADIF只有⼀个统⼀的头，所以必须得到所有的数据后解码。
 
@@ -434,7 +451,7 @@ Analysis of audio and video protocols
         - stream_index：所属的AVStream
 
     - AVFrame
-        
+      
         ![AVFrame常用函数](/images/AVFrame常用函数.png)
         
         - data：解码后的图像像素数据（音频采样数据）
