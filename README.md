@@ -121,13 +121,13 @@ Analysis of audio and video protocols
 
 - H264采⽤了独特的I帧、P帧和B帧策略来实现，连续帧之间的压缩
 
-![h264层次](/images/h264层次.png)
+    ![h264层次](/images/h264层次.png)
 
 - H264将视频分为连续的帧进⾏传输，在连续的帧之间使⽤I帧、P帧和B帧。同时对于帧内⽽⾔，将图像分块为⽚、宏块和字块进⾏分⽚传输；通过这个过程实现对视频⽂件的压缩包装。
 
 - ⼀个序列的第⼀个图像叫做 IDR 图像（⽴即刷新图像），IDR 图像都是 I 帧图像。I和IDR帧都使⽤帧内预测。I帧不⽤参考任何帧，但是之后的P帧和B帧是有可能参考这个I帧之前的帧的。IDR就不允许这样。其核⼼作⽤是，是为了解码的重同步，当解码器解码到 IDR 图像时，⽴即将参考帧队列清空，将已解码的数据全部输出或抛弃，重新查找参数集，开始⼀个新的序列。这样，如果前⼀个序列出现重⼤错误，在这⾥可以获得重新同步的机会。IDR图像之后的图像永远不会使⽤IDR之前的图像的数据来解码。
 
-![gop](/images/gop.png)
+    ![gop](/images/gop.png)
 
 - SPS：序列参数集，SPS中保存了⼀组编码视频序列(Coded video sequence)的全局参数。
 - PPS：图像参数集，对应的是⼀个序列中某⼀幅图像或者某⼏幅图像的参数。
@@ -136,20 +136,20 @@ Analysis of audio and video protocols
 - B帧: 双向预测内插编码帧，则要参考其前⼀个I或者P帧及其后⾯的⼀个P帧来⽣成⼀张完整的图⽚。  
 - 发I帧之前，⾄少要发⼀次SPS和PPS。 
 
-![H.264码流分层结构](/images/H.264码流分层结构.png)
+    ![H.264码流分层结构](/images/H.264码流分层结构.png)
 
 - NAL层，视频数据网络抽象层（Network Abstraction Layer）
 - VCL层，视频数据编码层（Video Coding Layer）
 
-![RBSP与SODB](/images/RBSP与SODB.png)
+    ![RBSP与SODB](/images/RBSP与SODB.png)
 
 - SODB，数据位串（String Of Data Bits）。原始数据比特流，长度不一定是8的倍数，故需要补齐。由VCL层产生。
 
 - RBSP，原始字节序列负载（Raw Byte Sequence Playload）。SODB + trailing bits，算法是如果SODB最后一个字节不对齐，则补1和多个0。
 
-![NALU](/images/NALU.png)
+    ![NALU](/images/NALU.png)
 
-![NAL_Header](/images/NAL_Header.png)
+    ![NAL_Header](/images/NAL_Header.png)
 
 - NALU，NAL单元。NAL Header（1B）+ RBSP。
 - H.264标准指出，当数据流是储存在介质上时，在每个NALU前添加起始码：0x000001或0x00000001，⽤来指示⼀个NALU的起始和终⽌位置 。
@@ -279,7 +279,7 @@ Analysis of audio and video protocols
 
 - Tag⼀般可以分为3种类型：脚本(帧)数据类型、⾳频数据类型、视频数据。FLV数据以⼤端序进⾏存储，在解析时需要注意。
 
-![flv解析过程](/images/flv解析过程.png)
+    ![flv解析过程](/images/flv解析过程.png)
 
 - ⼀个FLV⽂件，每种类型的tag都属于⼀个流，也就是⼀个flv⽂件最多只有⼀个⾳频流，⼀个视频流，不存在多个独⽴的⾳视频流在⼀个⽂件的情况。
 
@@ -352,12 +352,12 @@ Analysis of audio and video protocols
     
         - *AudioSpecificConfig*
     
-        | 字段 | 字段类型 | 字段含义 |
-        | :- | :-: | :- |
-        | AudioObjectType | UB[5] |编码器类型，比如2表示AAC-LC|
-        | SamplingFrequencyIndex | UB[4] | 采样率索引值，比如4表示44100|
-        | ChannelConfiguration | UB[4] | 声道配置，比如2代表双声道，front-left, front-right |
-        | AOT Specific Config | UB[n] ||
+            | 字段 | 字段类型 | 字段含义 |
+            | :- | :-: | :- |
+            | AudioObjectType | UB[5] |编码器类型，比如2表示AAC-LC|
+            | SamplingFrequencyIndex | UB[4] | 采样率索引值，比如4表示44100|
+            | ChannelConfiguration | UB[4] | 声道配置，比如2代表双声道，front-left, front-right |
+            | AOT Specific Config | UB[n] ||
     
     - ⾳频Tag Data区域开始的第⼀个字节包含了⾳频数据的参数信息，第⼆个字节开始为⾳频流数据。（这两个字节属于tag的data部分，不是header部分）。
     
@@ -385,7 +385,7 @@ Analysis of audio and video protocols
         | Data | UI8[n] | 1、如果如果AVCPacketType=0，则为AVCDecoderConfigurationRecord，H.264 视频解码所需要的参数集（SPS、PPS）<br>2、如果AVCPacketType=1，则为NALU（一个或多个）<br>3、如果AVCPacketType=2，则为空 |
 
     - 视频Tag Data开始的第⼀个字节包含视频数据的参数信息，第⼆个字节开始为视频流数据。
-    - CompositionTime 表示PTS相对于DTS的偏移值， 在每个视频tag的第14~16字节。显示时间(pts) = 解码时间（tag的第5~8字节） + CompositionTime，CompositionTime的单位也是ms。
+    - CompositionTime 表示PTS相对于DTS的偏移值， 在每个视频tag的第14-16字节。显示时间(pts) = 解码时间（tag的第5-8字节） + CompositionTime，CompositionTime的单位也是ms。
 
 ## FFmpeg
 
