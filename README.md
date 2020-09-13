@@ -23,10 +23,10 @@ Analysis of audio and video protocols
 
 ## 视频主要概念
 
-- **视频码率：** **kb/s**，是指视频文件在单位时间内使用的数据流量，也叫码流率。码率越大，说明单位时间内取样率越大，数据流精度就越高。
-- **视频帧率**：fps，通常说一个视频的25帧，指的就是这个视频帧率，即1秒中会显示25帧。帧率越高，给人的视觉就越流畅。
+- **视频码率**： **kb/s**，是指视频文件在单位时间内使用的数据流量，也叫码流率。码率越大，说明单位时间内取样率越大，数据流精度就越高。
+- **视频帧率**：**fps**，通常说一个视频的25帧，指的就是这个视频帧率，即1秒中会显示25帧。帧率越高，给人的视觉就越流畅。
 - **视频分辨率**：分辨率就是我们常说的640x480分辨率、1920x1080分辨率，分辨率影响视频图像的大小。
-- **I** **帧（**Intra coded frames**）**：
+- **I** 帧（**Intra coded frames**）：
 
     - I帧不需要参考其他画面而生成,解码时仅靠自己就重构完整图像;
 
@@ -41,13 +41,13 @@ Analysis of audio and video protocols
     - I帧是帧组GOP的基础帧(第一帧),在一组中只有一个I帧;
 
     - I帧不需要考虑运动矢量;
-- **P** **帧（**Predicted frames**）**：根据本帧与相邻的前一帧（I帧或P帧）的不同点来压缩本帧数据，同时利用了空间和时间上的相关性。
+- **P** 帧（**Predicted frames**）：根据本帧与相邻的前一帧（I帧或P帧）的不同点来压缩本帧数据，同时利用了空间和时间上的相关性。
 - P帧属于前向预测的帧间编码。它需要参考前面最靠近它的**I**帧或**P**帧来解码。
-- **B** **帧（**Bi-directional predicted frames**）**：B 帧图像采用双向时间预测，可以大大提高压缩倍数。
+- **B** 帧（**Bi-directional predicted frames**）：B 帧图像采用双向时间预测，可以大大提高压缩倍数。
 
 ## 音频主要概念
 
-- **采样频率：** 每秒钟采样的点的个数。常用的采样频率有：
+- **采样频率**： 每秒钟采样的点的个数。常用的采样频率有：
 
     - 22000（22kHz）： 无线广播。
 
@@ -61,11 +61,11 @@ Analysis of audio and video protocols
 
 - **采样精度（采样深度）** ：每个“样本点”的大小，常用的大小为8bit， 16bit，24bit。
 
-- **通道数：** 单声道，双声道，四声道，5.1声道。
+- **通道数**： 单声道，双声道，四声道，5.1声道。
 
-- **比特率：** 每秒传输的bit数，单位为：bps（Bit Per Second）间接衡量声音质量的一个标准。没有压缩的音频数据的比特率 = 采样频率 * 采样精度 * 通道数。
+- **比特率**： 每秒传输的bit数，单位为：bps（Bit Per Second）间接衡量声音质量的一个标准。没有压缩的音频数据的比特率 = 采样频率 * 采样精度 * 通道数。
 
-- **码率：** 压缩后的音频数据的比特率。常见的码率：
+- **码率**： 压缩后的音频数据的比特率。常见的码率：
 
     - 96kbps： FM质量
 
@@ -79,13 +79,13 @@ Analysis of audio and video protocols
 
     - 码率 = 音频文件大小/时长。
 
-- **帧：** 每次编码的采样单元数，比如MP3通常是1152个采样点作为一个编码单元，AAC通常是1024个采样点作为一个编码单元。
+- **帧**： 每次编码的采样单元数，比如MP3通常是1152个采样点作为一个编码单元，AAC通常是1024个采样点作为一个编码单元。
 
 - **帧长** ：可以指每帧播放持续的时间：每帧持续时间(秒) = 每帧采样点数 / 采样频率（HZ）比如：MP3 48k, 1152个采样点,每帧则为 24毫秒,1152/48000= 0.024 秒 = 24毫秒；也可以指压缩后每帧的数据长度。
 
-- **交错模式：** 数字音频信号存储的方式。数据以连续帧的方式存放，即首先记录帧1的左声道样本和右声道样本，再开始帧2的记录...
+- **交错模式**： 数字音频信号存储的方式。数据以连续帧的方式存放，即首先记录帧1的左声道样本和右声道样本，再开始帧2的记录...
 
-- **非交错模式：** 首先记录的是一个周期内所有帧的左声道样本，再记录所有右声道样本。
+- **非交错模式**： 首先记录的是一个周期内所有帧的左声道样本，再记录所有右声道样本。
 
 - 数字音频压缩编码在保证信号在听觉方面不产生失真的前提下，对音频数据信号进行尽可能大的压缩，降低数据量。数字音频压缩编码采取去除声音信号中冗余成分的方法来实现。所谓冗余成分指的是音频中不能被人耳感知到的信号，它们对确定声音的音色，音调等信息没有任何的帮助。
 
@@ -132,37 +132,34 @@ Analysis of audio and video protocols
 - SPS：序列参数集，SPS中保存了⼀组编码视频序列(Coded video sequence)的全局参数。
 - PPS：图像参数集，对应的是⼀个序列中某⼀幅图像或者某⼏幅图像的参数。
 - I帧：帧内编码帧，可独⽴解码⽣成完整的图⽚。
-- P帧: 前向预测编码帧，需要参考其前⾯的⼀个I 或者B 来⽣成⼀张完整的图⽚。
+- P帧: 前向预测编码帧，需要参考其前⾯的⼀个I帧或者B帧来⽣成⼀张完整的图⽚。
 - B帧: 双向预测内插编码帧，则要参考其前⼀个I或者P帧及其后⾯的⼀个P帧来⽣成⼀张完整的图⽚。  
 - 发I帧之前，⾄少要发⼀次SPS和PPS。 
 
 ![H.264码流分层结构](/images/H.264码流分层结构.png)
 
-* NAL层，视频数据网络抽象层（Network Abstraction Layer）
-* VCL层，视频数据编码层（Video Coding Layer）
+- NAL层，视频数据网络抽象层（Network Abstraction Layer）
+- VCL层，视频数据编码层（Video Coding Layer）
 
 ![RBSP与SODB](/images/RBSP与SODB.png)
 
-* SODB，数据位串（String Of Data Bits）。原始数据比特流，长度不一定是8的倍数，故需要补齐。由VCL层产生。
+- SODB，数据位串（String Of Data Bits）。原始数据比特流，长度不一定是8的倍数，故需要补齐。由VCL层产生。
 
-* RBSP，原始字节序列负载（Raw Byte Sequence Playload）。SODB + trailing bits，算法是如果SODB最后一个字节不对齐，则补1和多个0。
+- RBSP，原始字节序列负载（Raw Byte Sequence Playload）。SODB + trailing bits，算法是如果SODB最后一个字节不对齐，则补1和多个0。
 
 ![NALU](/images/NALU.png)
 
 ![NAL_Header](/images/NAL_Header.png)
 
-* NALU，NAL单元。NAL Header（1B）+ RBSP。
-* H.264标准指出，当数据流是储存在介质上时，在每个NALU 前添加起始码：0x000001 或
-    0x00000001，⽤来指示⼀个NALU 的起始和终⽌位置 。
-* 3字节的0x000001只有⼀种场合下使⽤，就是⼀个完整的帧被编为多个slice（⽚）的时
-    候，包含这些slice的NALU 使⽤3字节起始码。其余场合都是4字节0x00000001的。  
-* H264有两种封装
+- NALU，NAL单元。NAL Header（1B）+ RBSP。
+- H.264标准指出，当数据流是储存在介质上时，在每个NALU前添加起始码：0x000001或0x00000001，⽤来指示⼀个NALU的起始和终⽌位置 。
+- 3字节的0x000001只有⼀种场合下使⽤，就是⼀个完整的帧被编为多个slice（⽚）的时候，包含这些slice的NALU使⽤3字节起始码。其余场合都是4字节0x00000001的。  
+- H264有两种封装
     - ⼀种是annexb模式，传统模式，有startcode，SPS和PPS是在ES中。
     - ⼀种是mp4模式，⼀般mp4 mkv都是mp4模式，没有startcode，SPS和PPS以及其它信息被封装在container中，每⼀个frame前⾯4个字节是这个frame的⻓度。很多解码器只⽀持annexb这种模式，因此需要将mp4做转换：在ffmpeg中⽤h264_mp4toannexb_filter可以做转换。
-* 需要说明的是，通过提⾼GOP值来提⾼图像质量是有限度的，在遇到场景切换的情况时，
-    H.264编码器会⾃动强制插⼊⼀个I帧，此时实际的GOP值被缩短了。另⼀⽅⾯，在⼀个GOP中，P、B帧是由I帧预测得到的，当I帧的图像质量⽐较差时，会影响到⼀个GOP中后续P、B帧的图像质量，直到下⼀个GOP开始才有可能得以恢复，所以GOP值也不宜设置过⼤。  
-* 由于P、B帧的复杂度⼤于I帧，所以过多的P、B帧会影响编码效率，使编码效率降低。另外，过⻓的GOP还会影响Seek操作的响应速度，由于P、B帧是由前⾯的I或P帧预测得到的，所以Seek操作需要直接定位，解码某⼀个P或B帧时，需要先解码得到本GOP内的I帧及之前的N个预测帧才可以，GOP值越⻓，需要解码的预测帧就越多，seek响应的时间也越⻓。  
-* P帧特点:
+- 需要说明的是，通过提⾼GOP值来提⾼图像质量是有限度的，在遇到场景切换的情况时，H.264编码器会⾃动强制插⼊⼀个I帧，此时实际的GOP值被缩短了。另⼀⽅⾯，在⼀个GOP中，P、B帧是由I帧预测得到的，当I帧的图像质量⽐较差时，会影响到⼀个GOP中后续P、B帧的图像质量，直到下⼀个GOP开始才有可能得以恢复，所以GOP值也不宜设置过⼤。  
+- 由于P、B帧的复杂度⼤于I帧，所以过多的P、B帧会影响编码效率，使编码效率降低。另外，过⻓的GOP还会影响Seek操作的响应速度，由于P、B帧是由前⾯的I或P帧预测得到的，所以Seek操作需要直接定位，解码某⼀个P或B帧时，需要先解码得到本GOP内的I帧及之前的N个预测帧才可以，GOP值越⻓，需要解码的预测帧就越多，seek响应的时间也越⻓。  
+- P帧特点:
     1) P帧是I帧后⾯相隔1~2帧的编码帧;
     2) P帧采⽤运动补偿的⽅法传送它与前⾯的I或P帧的差值及运动⽮量(预测误差);
     3) 解码时必须将I帧中的预测值与预测误差求和后才能重构完整的P帧图像;
@@ -170,7 +167,7 @@ Analysis of audio and video protocols
     5) P帧可以是其后⾯P帧的参考帧,也可以是其前后的B帧的参考帧;
     6) 由于P帧是参考帧,它可能造成解码错误的扩散;
     7) 由于是差值传送,P帧的压缩⽐较⾼。  
-* B帧特点
+- B帧特点
     1）B帧是由前⾯的I或P帧和后⾯的P帧来进⾏预测的;
     2）B帧传送的是它与前⾯的I或P帧和后⾯的P帧之间的预测误差及运动⽮量;
     3）B帧是双向预测编码帧;
@@ -179,13 +176,13 @@ Analysis of audio and video protocols
 
 ## AAC（高级音频编码）
 
-![ADIF](/images/ADIF.png)
-
 - ADIF，音频数据交换格式（Audio Data Interchange Format）。这种格式的特征是可以确定的找到这个音频数据的开始，不需进行在音频数据流中间开始的解码，即它的解码必须在明确定义的开始处进行。故这种格式常用在磁盘文件中。
+
+    ![ADIF](/images/ADIF.png)
 
     ![AAC](/images/AAC.png)
 
-![ADTS](/images/ADTS.png)
+    ![ADTS](/images/ADTS.png)
 
 - ADTS，音频数据传输流（Audio Data Transport Stream）。这种格式的特征是它是一个有同步字的比特流，解码可以在这个流中任何位置开始。它的特征类似于mp3数据流格式。
 
@@ -198,6 +195,7 @@ Analysis of audio and video protocols
         - adts_fixed_header();
 
         - adts_variable_header();
+
         - 其⼀为固定头信息，紧接着是可变头信息。固定头信息中的数据每⼀帧都相同，⽽可变头信息则在帧与帧之间可变。
 
     - syncword ：同步头 总是0xFFF, all bits must be 1，代表着⼀个ADTS帧的开始 
@@ -214,7 +212,7 @@ Analysis of audio and video protocols
     
     - sampling_frequency_index：表示使⽤的采样率下标，通过这个下标在Sampling Frequencies[ ]数组中查找得知采样率的值。  
     
-        ![Sampling Frequencies  ](/images/Sampling Frequencies.png)
+        ![Sampling Frequencies](/images/Sampling Frequencies.png)
     
     - channel_configuration: 表示声道数，⽐如2表示⽴体声双声道
     
@@ -228,7 +226,7 @@ Analysis of audio and video protocols
     - adts_buffer_fullness：0x7FF 说明是码率可变的码流。
     - number_of_raw_data_blocks_in_frame：表示ADTS帧中有number_of_raw_data_blocks_in_frame + 1个AAC原始帧。所以说number_of_raw_data_blocks_in_frame == 0 表示说ADTS帧中有⼀个AAC数据块。
 
-* ADTS可以在任意帧解码，也就是说它每⼀帧都有头信息。ADIF只有⼀个统⼀的头，所以必须得到所有的数据后解码。
+- ADTS可以在任意帧解码，也就是说它每⼀帧都有头信息。ADIF只有⼀个统⼀的头，所以必须得到所有的数据后解码。
 
 ## FLV
 
@@ -242,42 +240,42 @@ Analysis of audio and video protocols
 
 - FLV header 由如下字段组成，其中前三个字节内容固定是*FLV*，最后4个字节内容固定是9（对*FLV*版本1来说）
 
-    | 字段              | 字段类型 | 字段含义                        |
-    | :---------------- | :------: | :------------------------------ |
-    | Signature         |   UI8    | 签名，固定为'F' (0x46)          |
-    | Signature         |   UI8    | 签名，固定为'L' (0x4c)          |
-    | Signature         |   UI8    | 签名，固定为'V' (0x56)          |
-    | Version           |   UI8    | 版本，比如 0x01 表示 FLV 版本 1 |
-    | TypeFlagsReserved |  UB[5]   | 全为0                           |
-    | TypeFlagsAudio    |  UB[1]   | 1表示有audio tag，0表示没有     |
-    | TypeFlagsReserved |  UB[1]   | 全为0                           |
-    | TypeFlagsVideo    |  UB[1]   | 1表示有video tag，0表示没有     |
-    | DataOffset        |   UI32   | FLV header的大小，单位是字节    |
+    | 字段 | 字段类型 | 字段含义 |
+    | :- | :--: | :- |
+    | Signature | UI8 |签名，固定为'F' (0x46)|
+    | Signature | UI8 |签名，固定为'L' (0x4c)|
+    | Signature | UI8 |签名，固定为'V' (0x56)|
+    | Version | UI8 |版本，比如 0x01 表示 FLV 版本 1|
+    | TypeFlagsReserved | UB[5] |全为0|
+    | TypeFlagsAudio | UB[1] |1表示有audio tag，0表示没有|
+    | TypeFlagsReserved | UB[1] |全为0|
+    | TypeFlagsVideo | UB[1] |1表示有video tag，0表示没有|
+    | DataOffset | UI32 |FLV header的大小，单位是字节|
 
 - FLV file body 很有规律，由一系列的*TagSize*和*Tag* 组成，其中*PreviousTagSize0*总是为0；*tag*由*tag header*、*tag body*组成；对*FLV*版本1，*tag header*固定为11个字节，因此，*PreviousTagSize*（除第1个）的值为 11 + 前一个*tag*的*tag body*的大小；
 
-    | 字段               | 字段类型 | 字段含义                        |
-    | :----------------- | :------: | :------------------------------ |
-    | PreviousTagSize0   |   UI32   | 总是0                           |
-    | Tag1               |  FLVTAG  | 第1个tag                        |
-    | PreviousTagSize1   |   UI32   | 前一个tag的大小，包括tag header |
-    | Tag2               |  FLVTAG  | 第2个tag                        |
-    | ...                |   ...    | ...                             |
-    | PreviousTagSizeN-1 |   UI32   | 第N-1个tag的大小                |
-    | TagN               |  FLVTAG  | 第N个tag                        |
-    | PreviousTagSizeN   |   UI32   | 第N个tag的大小，包含tag header  |
+    | 字段 | 字段类型 | 字段含义 |
+    | :- | :-: | :- |
+    | PreviousTagSize0 | UI32 |总是0|
+    | Tag1 | FLVTAG |第1个tag|
+    | PreviousTagSize1 | UI32 |前一个tag的大小，包括tag header|
+    | Tag2 | FLVTAG |第2个tag|
+    | ... | ... |...|
+    | PreviousTagSizeN-1 | UI32 |第N-1个tag的大小|
+    | TagN | FLVTAG |第N个tag|
+    | PreviousTagSizeN | UI32 |第N个tag的大小，包含tag header|
 
 - FLV tag 由*tag header*+*tag body*组成。
     *tag header*如下，总共占据11个字节：
 
-    | 字段              |     字段类型      | 字段含义                                                     |
-    | :---------------- | :---------------: | :----------------------------------------------------------- |
-    | TagType           |        UI8        | tag类型：<br>8：audio<br>9：video<br>18：script data<br>其他：保留 |
-    | DataSize          |       UI24        | tag body的大小                                               |
-    | Timestamp         |       UI24        | 相对于第一个tag的时间戳（单位是毫秒）第一个tag的Timestamp为0 |
-    | TimestampExtended |        UI8        | 时间戳的扩展字段，当 Timestamp 3个字节不够时，会启用这个字段，代表高8位 |
-    | StreamID          |       UI24        | 总是0                                                        |
-    | Data              | 取决于根据TagType | TagType=8，则为AUDIODATA<br>TagType=9，则为VIDEODATA<br>TagType=18，则为SCRIPTDATAOBJECT |
+    | 字段 | 字段类型 |字段含义|
+    | :- | :-: | :- |
+    | TagType | UI8 |tag类型：<br>8：audio<br>9：video<br>18：script data<br>其他：保留 |
+    | DataSize | UI24 |tag body的大小|
+    | Timestamp | UI24 |相对于第一个tag的时间戳（单位是毫秒）第一个tag的Timestamp为0|
+    | TimestampExtended | UI8 |时间戳的扩展字段，当 Timestamp 3个字节不够时，会启用这个字段，代表高8位|
+    | StreamID | UI24 |总是0|
+    | Data | 取决于根据TagType |TagType=8，则为AUDIODATA<br>TagType=9，则为VIDEODATA<br>TagType=18，则为SCRIPTDATAOBJECT|
 
 - Tag⼀般可以分为3种类型：脚本(帧)数据类型、⾳频数据类型、视频数据。FLV数据以⼤端序进⾏存储，在解析时需要注意。
 
@@ -289,101 +287,102 @@ Analysis of audio and video protocols
 
 - Script data脚本数据就是描述视频或⾳频的信息的数据，如宽度、⾼度、时间等等，⼀个⽂件中通常只有⼀个元数据，⾳频tag和视频tag就是⾳视频信息了，采样、声道、频率，编码等信息。 
 
-- **Script Tag Data结构(脚本类型、帧类型) **
+- **Script Tag Data结构(脚本类型、帧类型)**
 
     ![amf](/images/amf.png)
     
-    * 该类型Tag⼜被称为MetaData Tag,存放⼀些关于FLV视频和⾳频的元信息，⽐如：duration、width、height等。通常该类型Tag会作为FLV⽂件的第⼀个tag，并且只有⼀个，跟在File Header后。
+    - 该类型Tag⼜被称为MetaData Tag,存放⼀些关于FLV视频和⾳频的元信息，⽐如：duration、width、height等。通常该类型Tag会作为FLV⽂件的第⼀个tag，并且只有⼀个，跟在File Header后。
     
-    * AMF包中第一个字节为类型标识：
+    - AMF包中第一个字节为类型标识：
     
-        * Number 0×00;
+        - Number 0×00;
     
-        * Boolean 0×01;
+        - Boolean 0×01;
     
-        * String 0×02;
+        - String 0×02;
     
-        * Object 0×03;
+        - Object 0×03;
     
-        * MovieClip 0×04;
+        - MovieClip 0×04;
     
-        * Null 0×05;
+        - Null 0×05;
     
-        * Undefined 0×06;
+        - Undefined 0×06;
     
-        * Reference 0×07;
+        - Reference 0×07;
     
-        * ECMAArray 0×08;
+        - ECMAArray 0×08;
     
-        * ObjectEnd 0×09;
+        - ObjectEnd 0×09;
     
-        * StrictArray 0x0a;
+        - StrictArray 0x0a;
     
-        * Date 0x0b;
+        - Date 0x0b;
     
-        * LongString 0x0c;
+        - LongString 0x0c;
     
-        * Unsupported 0x0d;
+        - Unsupported 0x0d;
     
-        * Recordset 0x0e;
+        - Recordset 0x0e;
     
-        * XMLObject 0x0f;
+        - XMLObject 0x0f;
     
-        * TypedObject(Class) 0×10;
+        - TypedObject(Class) 0×10;
     
-* **Audio Tag Data结构(⾳频类型)  **
+* **Audio Tag Data结构(⾳频类型)**
 
     - *Audio tags*定义如下所示：
 
-        | 字段        |        字段类型         | 字段含义                                                     |
-    | :---------- | :---------------------: | :----------------------------------------------------------- |
-        | SoundFormat |          UB[4]          | 音频格式，重点关注 10 = AAC<br>0 = Linear PCM, platform endian<br>1 = ADPCM<br>2 = MP3<br>3 = Linear PCM, little endian<br>4 = Nellymoser 16-kHz mono<br>5 = Nellymoser 8-kHz mono<br>6 = Nellymoser<br>7 = G.711 A-law logarithmic PCM<br>8 = G.711 mu-law logarithmic PCM<br>9 = reserved<br>10 = AAC<br>11 = Speex<br>14 = MP3 8-Khz<br>15 = Device-specific sound |
-    | SoundRate   |          UB[2]          | 采样率，对AAC来说，永远等于3<br>0 = 5.5-kHz<br>1 = 11-kHz<br>2 = 22-kHz<br>3 = 44-kHz |
-        | SoundSize   |          UB[1]          | 采样精度，对于压缩过的音频，永远是16位<br>0 = snd8Bit<br>1 = snd16Bit |
-        | SoundType   |          UB[1]          | 声道类型，对Nellymoser来说，永远是单声道；对AAC来说，永远是双声道；<br>0 = sndMono 单声道<br>1 = sndStereo 双声道 |
-        | SoundData   | UI8[size of sound data] | 如果是AAC，则为 AACAUDIODATA；其他请参考规范；               |
+        | 字段 | 字段类型 |字段含义|
+        | :- | :-: | :- |
+        | SoundFormat | UB[4] |音频格式，重点关注 10 = AAC<br>0 = Linear PCM, platform endian<br>1 = ADPCM<br>2 = MP3<br>3 = Linear PCM, little endian<br>4 = Nellymoser 16-kHz mono<br>5 = Nellymoser 8-kHz mono<br>6 = Nellymoser<br>7 = G.711 A-law logarithmic PCM<br>8 = G.711 mu-law logarithmic PCM<br>9 = reserved<br>10 = AAC<br>11 = Speex<br>14 = MP3 8-Khz<br>15 = Device-specific sound|
+        | SoundRate | UB[2] |采样率，对AAC来说，永远等于3<br>0 = 5.5-kHz<br>1 = 11-kHz<br>2 = 22-kHz<br>3 = 44-kHz|
+        | SoundSize | UB[1] |采样精度，对于压缩过的音频，永远是16位<br>0 = snd8Bit<br>1 = snd16Bit|
+        | SoundType | UB[1] |声道类型，对Nellymoser来说，永远是单声道；对AAC来说，永远是双声道；<br>0 = sndMono 单声道<br>1 = sndStereo 双声道|
+        | SoundData | UI8[size of sound data] |如果是AAC，则为 AACAUDIODATA；其他请参考规范；|
     
-        *AACAUDIODATA*
-        当*SoundFormat*为10时，表示音频采AAC进行编码，此时，*SoundData*的定义如下：
+        - *AACAUDIODATA*
+
+            当*SoundFormat*为10时，表示音频采AAC进行编码，此时，*SoundData*的定义如下：
     
-        | 字段          | 字段类型 | 字段含义                                                     |
-        | :------------ | :------: | :----------------------------------------------------------- |
-        | AACPacketType |   UI8    | 0: AAC sequence header<br>1: AAC raw                         |
-        | Data          |  UI8[n]  | 如果AACPacketType为0，则为AudioSpecificConfig；如果AACPacketType为1，则为AAC帧数据 |
+            | 字段 | 字段类型 | 字段含义|
+            | :- | :-: | :- |
+            | AACPacketType | UI8 |0: AAC sequence header<br>1: AAC raw|
+            | Data | UI8[n] |如果AACPacketType为0，则为AudioSpecificConfig；如果AACPacketType为1，则为AAC帧数据|
     
-        *AudioSpecificConfig*
+        - *AudioSpecificConfig*
     
-        | 字段                   | 字段类型 | 字段含义                                           |
-        | :--------------------- | :------: | :------------------------------------------------- |
-        | AudioObjectType        |  UB[5]   | 编码器类型，比如2表示AAC-LC                        |                                                |
-        | SamplingFrequencyIndex |  UB[4]   | 采样率索引值，比如4表示44100                       |
-        | ChannelConfiguration   |  UB[4]   | 声道配置，比如2代表双声道，front-left, front-right |
-        | AOT Specific Config    |  UB[n]   |                                                    |
+        | 字段 | 字段类型 | 字段含义 |
+        | :- | :-: | :- |
+        | AudioObjectType | UB[5] |编码器类型，比如2表示AAC-LC|
+        | SamplingFrequencyIndex | UB[4] | 采样率索引值，比如4表示44100|
+        | ChannelConfiguration | UB[4] | 声道配置，比如2代表双声道，front-left, front-right |
+        | AOT Specific Config | UB[n] ||
     
-    * ⾳频Tag Data区域开始的第⼀个字节包含了⾳频数据的参数信息，第⼆个字节开始为⾳频流数据。（这两个字节属于tag的data部分，不是header部分）。
+    - ⾳频Tag Data区域开始的第⼀个字节包含了⾳频数据的参数信息，第⼆个字节开始为⾳频流数据。（这两个字节属于tag的data部分，不是header部分）。
     
-    * 第⼆个字节开始为⾳频数据（需要判断该数据是真正的⾳频数据，还是⾳频config信息）。
+    - 第⼆个字节开始为⾳频数据（需要判断该数据是真正的⾳频数据，还是⾳频config信息）。
     
         ![aac audio data](/images/aac audio data.png)
     
-* **Video Tag Data结构(视频类型) ** 
+- **Video Tag Data结构(视频类型)** 
 
     - *Video tags*定义如下：
 
-        | 字段      |   字段类型    | 字段含义                                                     |
-        | :-------- | :-----------: | :----------------------------------------------------------- |
-        | FrameType |     UB[4]     | 重点关注1、2：<br>1: keyframe (for AVC, a seekable frame) —— 即H.264的IDR帧；<br>2: inter frame (for AVC, a non- seekable frame) —— H.264的普通I帧；<br>3: disposable inter frame (H.263 only)<br>4: generated keyframe (reserved for server use only)<br>5: video info/command frame |
-        | CodecID   |     UB[4]     | 编解码器，主要关注 7（AVC）<br>1: JPEG (currently unused)<br>2: Sorenson H.263<br>3: Screen video<br>4: On2 VP6<br>5: On2 VP6 with alpha channel<br>6: Screen video version 2<br>7: AVC |
-        | VideoData | 取决于CodecID | 实际的媒体类型，主要关注 7:AVCVIDEOPACKE<br>2: H263VIDEOPACKET<br>3: SCREENVIDEOPACKET<br>4: VP6FLVVIDEOPACKET<br>5: VP6FLVALPHAVIDEOPACKET<br>6: SCREENV2VIDEOPACKET<br>7: AVCVIDEOPACKE |
+        | 字段 | 字段类型 | 字段含义 |
+        | :- | :-: | :- |
+        | FrameType | UB[4] |重点关注1、2：<br>1: keyframe (for AVC, a seekable frame) —— 即H.264的IDR帧；<br>2: inter frame (for AVC, a non- seekable frame) —— H.264的普通I帧；<br>3: disposable inter frame (H.263 only)<br>4: generated keyframe (reserved for server use only)<br>5: video info/command frame|
+        | CodecID | UB[4] |编解码器，主要关注 7（AVC）<br>1: JPEG (currently unused)<br>2: Sorenson H.263<br>3: Screen video<br>4: On2 VP6<br>5: On2 VP6 with alpha channel<br>6: Screen video version 2<br>7: AVC|
+        | VideoData | 取决于CodecID |实际的媒体类型，主要关注 7:AVCVIDEOPACKE<br>2: H263VIDEOPACKET<br>3: SCREENVIDEOPACKET<br>4: VP6FLVVIDEOPACKET<br>5: VP6FLVALPHAVIDEOPACKET<br>6: SCREENV2VIDEOPACKET<br>7: AVCVIDEOPACKE|
 
-        *AVCVIDEOPACKE*当*CodecID*为7时，*VideoData*为 *AVCVIDEOPACKE*，也即*H.264*媒体数据。
+        - *AVCVIDEOPACKE*当*CodecID*为7时，*VideoData*为 *AVCVIDEOPACKE*，也即*H.264*媒体数据。
         *AVCVIDEOPACKE*的定义如下：
 
-        | 字段            | 字段类型 | 字段含义                                                     |
-        | :-------------- | :------: | :----------------------------------------------------------- |
-        | AVCPacketType   |   UI8    | 0: AVC sequence header<br>1: AVC NALU<br>2: AVC end of sequence |
-        | CompositionTime |   SI24   | 如果AVCPacketType=1，则为时间cts偏移量；否则，为0。当B帧的存在时，视频解码呈现过程中，dts、pts可能不同，cts的计算公式为 pts - dts/90，单位为毫秒；如果B帧不存在，则cts固定为0。 |
-        | Data            |  UI8[n]  | 1、如果如果AVCPacketType=0，则为AVCDecoderConfigurationRecord，H.264 视频解码所需要的参数集（SPS、PPS）<br>2、如果AVCPacketType=1，则为NALU（一个或多个）<br>3、如果AVCPacketType=2，则为空 |
+        | 字段 | 字段类型 | 字段含义 |
+        | :- | :-: | :- |
+        | AVCPacketType | UI8 | 0: AVC sequence header<br>1: AVC NALU<br>2: AVC end of sequence |
+        | CompositionTime | SI24 | 如果AVCPacketType=1，则为时间cts偏移量；否则，为0。当B帧的存在时，视频解码呈现过程中，dts、pts可能不同，cts的计算公式为 pts - dts/90，单位为毫秒；如果B帧不存在，则cts固定为0。 |
+        | Data | UI8[n] | 1、如果如果AVCPacketType=0，则为AVCDecoderConfigurationRecord，H.264 视频解码所需要的参数集（SPS、PPS）<br>2、如果AVCPacketType=1，则为NALU（一个或多个）<br>3、如果AVCPacketType=2，则为空 |
 
     - 视频Tag Data开始的第⼀个字节包含视频数据的参数信息，第⼆个字节开始为视频流数据。
     - CompositionTime 表示PTS相对于DTS的偏移值， 在每个视频tag的第14~16字节。显示时间(pts) = 解码时间（tag的第5~8字节） + CompositionTime，CompositionTime的单位也是ms。
