@@ -208,15 +208,15 @@ Analysis of audio and video protocols
     
     - profile：表示使⽤哪个级别的AAC，如01 Low Complexity(LC)--- AAC LC。有些芯⽚只⽀持AAC LC。profile的值等于 Audio Object Type的值减1。profile = MPEG-4 Audio Object Type - 1  
     
-        ![audio object type](images/audio object type.png)
+        ![audio object type](images/audio_object_type.png)
     
     - sampling_frequency_index：表示使⽤的采样率下标，通过这个下标在Sampling Frequencies[ ]数组中查找得知采样率的值。  
     
-        ![Sampling Frequencies](/images/Sampling Frequencies.png)
+        ![Sampling Frequencies](/images/Sampling_Frequencies.png)
     
     - channel_configuration: 表示声道数，⽐如2表示⽴体声双声道
     
-        ![channel configuration](/images/channel configuration.png)
+        ![channel configuration](/images/channel_configuration.png)
     
     - frame_length : ⼀个ADTS帧的⻓度包括ADTS头和AAC原始流
         - frame length, this value must include 7 or 9 bytes of header length:
@@ -363,7 +363,7 @@ Analysis of audio and video protocols
     
     - 第⼆个字节开始为⾳频数据（需要判断该数据是真正的⾳频数据，还是⾳频config信息）。
     
-        ![aac audio data](/images/aac audio data.png)
+        ![aac audio data](/images/aac_audio_data.png)
     
 - **Video Tag Data结构(视频类型)** 
 
@@ -431,12 +431,13 @@ Analysis of audio and video protocols
     - AVCodec
 
         - name：编解码器名称
-
         - type：编解码器类型
-
         - id：编解码器ID
-
         - 一些编解码的接口函数，比如int (*decode)() 
+
+    - AVCodecParser
+        - ⽤于解析输⼊的数据流并把它分成⼀帧⼀帧的压缩编码数据。⽐较形象
+的说法就是把⻓⻓的⼀段连续的数据“切割”成⼀段段的数据
 
     - AVPacket
 
@@ -487,10 +488,14 @@ Analysis of audio and video protocols
     - avcodec_open2()： 打开编解码器
     - avcodec_decode_video2()： 解码一帧视频数据
     - avcodec_decode_audio4()： 解码一帧音频数据
-    - avcodec_send_packet(): 发送编码数据包
+    - avcodec_send_packet(): 发送编码数据包，输⼊参数可以为NULL，或者AVPacket的data域设置为NULL或者size域设置为0，表示将刷新所有的包，意味着数据流已经结束了
     - avcodec_receive_frame(): 接收解码后数据
     - avcodec_free_context():释放解码器上下文，包含了avcodec_close()
     - avcodec_close():关闭解码器
+    - av_parser_init：初始化AVCodecParserContext
+    - av_parser_parse2：解析获得⼀个Packet
+    - av_get_bytes_per_sample: 获取每个sample中的字节数
+    - avcodec_flush_buffers: 重置codec
 
 ## SDL2
 
