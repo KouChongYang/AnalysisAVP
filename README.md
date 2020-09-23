@@ -496,6 +496,45 @@ Analysis of audio and video protocols
     - av_parser_parse2：解析获得⼀个Packet
     - av_get_bytes_per_sample: 获取每个sample中的字节数
     - avcodec_flush_buffers: 重置codec
+    
+- 编码
+
+    - avcodec_find_encoder：根据指定的AVCodecID查找注册的编码器
+    - avcodec_find_encoder_by_name：根据指定的编码器名称查找注册的编码器 
+    - avcodec_alloc_context3：为AVCodecContext分配内存
+    - avcodec_open2：打开编码器
+    - avcodec_send_frame：将AVFrame⾮压缩数据给编码器
+    - avcodec_receive_packet：获取到编码后的AVPacket数据，收到的packet需要⾃⼰释放内存
+    - av_frame_get_buffer: 为⾳频或视频帧分配新的buffer。在调⽤这个函数之前，必须在AVFame上设
+        置好以下属性：
+        - format(视频为像素格式，⾳频为样本格式)
+        - nb_samples(样本个数，针对⾳频)
+        - channel_layout(通道类型，针对⾳频)
+        - width/height(宽⾼，针对视频）
+    - av_frame_make_writable：确保AVFrame是可写的，使⽤av_frame_make_writable()的问题是，在最坏的情况下，它会在您使⽤encode再次更改整个输⼊frame之前复制它。如果frame不可写，
+        av_frame_make_writable()将分配新的缓冲区，并复制这个输⼊input frame数据，避免和编码器需要缓存该帧时造成冲突
+    - av_samples_fill_arrays 填充⾳频帧
+    - av_image_fill_arrays: 存储⼀帧像素数据存储到AVFrame对应的data buffer
+    - av_image_get_buffer_size: 函数的作⽤是通过指定像素格式、图像宽、图像⾼来计算所需的内存⼤⼩
+        重点说明⼀个参数align:此参数是设定内存对⻬的对⻬数，也就是按多⼤的字节进⾏内存对⻬
+    - av_image_alloc: 此函数的功能是按照指定的宽、⾼、像素格式来分配图像内存
+    - av_image_fill_arrays(): 函数⾃身不具备内存申请的功能，此函数类似于格式化已经申请的内存，即通过
+        av_malloc()函数申请的内存空间，或者av_frame_get_buffer()函数申请的内存空间
+    
+- 封装
+
+    - avformat_write_header ： 写⽂件头
+    - av_write_frame/av_interleaved_write_frame： 写packet
+    - av_write_trailer ： 写⽂件尾  
+    - avcodec_parameters_from_context：将AVCodecContext结构体中码流参数拷⻉到AVCodecParameters结构体中，和avcodec_parameters_to_context刚好相反
+    - avformat_alloc_output_context2: 分配输出上下文
+    - avformat_new_stream : 创建流
+    - av_compare_ts : 比较时间戳
+    - av_q2d(): 将时间从AVRational形式转换为double形式。AVRational是分数类型，double是双精度浮点数
+        类型，转换的结果单位是秒。转换前后的值基于同⼀时间基，仅仅是数值的表现形式不同⽽已
+    - av_rescale_q(): ⽤于不同时间基的转换，⽤于将时间值从⼀种时间基转换为另⼀种时间基。
+        将a数值由 bq时间基转成 cq的时间基，通过返回结果获取以cq时间基表示的新数值  
+    - av_packet_rescale_ts(): ⽤于将AVPacket中各种时间值从⼀种时间基转换为另⼀种时间基
 
 ## SDL2
 
