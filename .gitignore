@@ -16,3 +16,4 @@ debug
 release
 out.*
 *.log
+.vs

@@ -1,4 +1,4 @@
-#ifndef __RTMP_SYS_H__
+﻿#ifndef __RTMP_SYS_H__
 #define __RTMP_SYS_H__
 /*
  *      Copyright (C) 2010 Howard Chu
@@ -23,6 +23,13 @@
  */
 
 #ifdef _WIN32
+
+#ifdef _MSC_VER	/* MSVC */
+ //#define snprintf _snprintf
+#define strcasecmp stricmp
+#define strncasecmp strnicmp
+ //#define vsnprintf _vsnprintf
+#endif
 
 #ifdef _XBOX
 #include <xtl.h>
