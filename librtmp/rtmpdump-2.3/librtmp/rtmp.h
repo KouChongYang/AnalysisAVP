@@ -71,11 +71,11 @@ extern "C"
 
 #define	RTMP_CHANNELS	65600
 
-	extern const char RTMPProtocolStringsLower[][7];
-	extern const AVal RTMP_DefaultFlashVer;
-	extern int RTMP_ctrlC;
+	DECL extern const char RTMPProtocolStringsLower[][7];
+	DECL extern const AVal RTMP_DefaultFlashVer;
+	DECL extern int RTMP_ctrlC;
 
-	uint32_t RTMP_GetTime(void);
+	DECL uint32_t RTMP_GetTime(void);
 
 #define RTMP_PACKET_TYPE_AUDIO 0x08
 #define RTMP_PACKET_TYPE_VIDEO 0x09
