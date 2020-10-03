@@ -777,11 +777,11 @@ make
     - 推流
 
     ```shell
-    ffmpeg -re -i gx.flv -vcodec copy -acodec copy -f flv -y rtmp://192.168.1.11/live/test
+    ffmpeg -re -i gx.flv -vcodec copy -acodec copy -f flv -y rtmp://127.0.0.1/live/test
     ```
 
     - 拉流
 
     ```shell
-    ffplay rtmp://192.168.1.11/live/test
+    ffplay rtmp://127.0.0.1/live/test
     ```
