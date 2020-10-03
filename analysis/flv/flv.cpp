@@ -165,7 +165,7 @@ std::ostream& operator<<(std::ostream& os, const FLVHEADER& flvheader)
 	os << "f : " << static_cast<char>(flvheader.F)
 		<< "\nl : " << static_cast<char>(flvheader.L)
 		<< "\nv : " << static_cast<char>(flvheader.V)
-		<< "\ntype : " << static_cast<int>(flvheader.F)
+		<< "\ntype : " << static_cast<int>(flvheader.flvtype)
 		<< "\nvideo : " << static_cast<int>(flvheader.hasvideo)
 		<< "\naudio : " << static_cast<int>(flvheader.hasaudio);
 	return os;

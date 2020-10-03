@@ -74,6 +74,8 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	in.close();
+
 	uint8_t data[] = {
 	0x00, 0x00, 0x00, 0x01,
 	0x12, 0x45, 0x55, 0x55,
@@ -97,6 +99,5 @@ int main(int argc, char* argv[])
 		std::cout.flags(f);
 	}
 
-	in.close();
 	return 0;
 }
