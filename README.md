@@ -622,6 +622,96 @@ Analysis of audio and video protocols
         void SDLCALL SDL_PauseAudio(int pause_on);
         ```
 
+## RTMP
+
+-  RTMP简介
+
+    - RTMP(Real Time Messaging Protocol)是一个应用层协议，主要用于在Flash player和服务器之间传输视频、音频、控制命令等内容。该协议的突出优点是: 低延时。RTMP基于TCP, 默认使用端口1935。
+
+- RTMP播放基本流程
+
+    ![RTMP播放基本流程](./images/RTMP播放基本流程.png)
+
+    - RTMP是基于TCP的应用层协议。通过TCP三次握手，可实现RTMP客户端与RTMP服务器的指定端口(默认端口为1935)建立一个可靠的网络连接。这里的网络连接才是真正的物理连接。完成了三次握手，客户端和服务器端就可以开始传送数据。经过三次握手，客户端与服务器端1935端口建立了TCP Connection。
+
+    ![RTMP-HandShake](./images/RTMP-HandShake.png)
+
+    - RTMP握手主要分为: 简单握手和复杂握手。
+    - RTMP连接时不同的Application Instance可根据功能等进行区分，比如直播可以用live来表示，点播回放可以用vod来表示。
+    - RTMP创建流用于创建逻辑通道，该通道用于传输视频、音频、metadata。在服务器的响应报文中会返回 ，用于唯一的标示该Stream。
+    - RTMP播放用来播放指定流。开始传输音视频数据。如果发送play命令后想要立即播放，需要清空play队列中的其它流，并将reset置为true。
+    - RTMP删除指定Stream ID的流。服务器不用对这条命令发送响应报文。
+
+- RTMP消息结构
+
+    ![RTMP消息结构](./images/RTMP消息结构.png)
+
+    ![RTMP消息](./images/RTMP消息.png)
+
+    - 消息主要分为三类: 协议控制消息、数据消息、命令消息等。
+    - 协议控制消息
+ 
+        - Message Type ID = 1 2 3 5 6和Message Type ID = 4两大类，主要用于协议内的控制
+
+    - 数据消息
+
+        - Message Type ID = 8 9 18
+        - 8: Audio 音频数据
+        - 9: Video 视频数据
+        - 18: Metadata 包括音视频编码、视频宽高等信息。
+
+    - 命令消息 
+
+        - Command Message (20, 17)
+        - 此类型消息主要有NetConnection和NetStream两个类，两个类分别有多个函数，该消息的调用，可理解为远程函数调用。
+
+    - Message StreamID是音视频流的唯一ID, 一路流如果既有音频包又有视频包，那么这路流音频包的StreamID和他视频包的StreamID相同。
+
+    ![RTMP的chunk结构](./images/RTMP的chunk结构.png)
+
+    - RTMP流中视频和音频拥有单独的Chunk Stream ID。比如音频的cs id=20，视频的cs id=21。接收端接收到Chunk之后，根据cs id分别将音频和视频“拼成消息”。
+    - RTMP协议最多⽀持65597个⽤户⾃定义chunk stream ID，范围为[3，65599] ，ID 0, 1, 2被协议规范直接使⽤，其中ID值为0, 1分表表示了Basic Header占⽤2个字节和3个字节：
+    - ID值0：代表Basic Header占⽤2个字节，CSID在 [64，319] 之间；
+    - ID值1：代表Basic Header占⽤3个字节，CSID在 [64，65599] 之间；
+    - ID值2：代表该chunk是控制信息和⼀些命令信息。
+    - 当Basic Header为1个字节时，CSID占6位，6位最多可以表示64个数，因此这种情况下CSID在 [0，63] 之间，其中⽤户可⾃定义的范围为 [3，63]。
+    - 当Basic Header为2个字节时，CSID占只占8位，第⼀个字节除chunk type占⽤的bit都置为0，第⼆个字节⽤来表示CSID-64，8位可以表示 [0, 255] 共256个数，ID的计算⽅法为（第⼆个字节+64），范围为 [64，319]。
+    - 当Basic Header为3个字节时，以在此字段⽤3字节版本编码。ID的计算⽅法为（第三字节*256+第⼆字节+64）（Basic Header是采⽤⼩端存储的⽅式），范围为 [64，65599]。
+
+    ![RTMP的chunk](./images/RTMP的chunk.png)
+
+    - Message被切割成一个或多个Chunk，然后在网络上进行发送。当发送时， 一个chunk发送完毕后才可以发送下一个chunk。
+    - 拆分的时候， 默认的Chunk Size是128字节。
+
+    ![RTMP的chunktype](./images/RTMP的chunktype.png)
+
+    - RTMP Chunk Header的长度不是固定的， 分为:12 Bytes、 8 Bytes、 4 Bytes、 1 Byte 四种，由RTMP Chunk Header前2位决定。
+
+    ![RTMP的chunk头1](./images/RTMP的chunk头1.png)
+    ![RTMP的chunk头2](./images/RTMP的chunk头2.png)
+
+    - 一般情况下， msg stream id是不会变的，所以针对视频或音频， 除了第一个RTMP Chunk Header是12Bytes的， 后续即可采用8Bytes的。
+    - 如果消息的长度(message length)和类型(msg type id, 如视频为9或音频为8)又相同，即可将这两部分也省去， RTMP Chunk Header采用4Bytes类型的。
+    - 如果当前Chunk与之前的Chunk相比, msg stream id相同， msg typeid相同， message length相同，而且都属于同一个消息(由同一个Message切割成)，这类Chunk的时间戳(timestamp)也是相同的，故后续的也可以省去， RTMP Chunk Header采用1 Byte类型的。
+    - 当Chunk Size足够大时(一般不这么干)，此时所有的Message都只能相应切割成一个Chunk，该Chunk仅msg stream id相同。此时基本上除了第一个Chunk的Header是12Bytes外，其它所有Chunk的Header都是8Bytes。
+    - 一般只有rtmp流刚开始的metadata、绝对时间戳的视频或音频是12Bytes。
+    - 有些控制消息也是12 Bytes, 比如connect。
+
+- RTMP传输流程
+
+    ![RTMP传输基本流程](./images/RTMP传输基本流程.png)
+
+    - 不同类型的消息会被分配不同的优先级，当网络传输能力受限时，优先级用来控制消息在网络底层的排队顺序。比如当客户端网络不佳时，流媒体服务器可能会选择丢弃视频消息，以保证音频消息可及时送达客户端。
+
+    ![RTMP消息优先级](./images/RTMP消息优先级.png)
+
+    - RTMP Chunk Stream层级允许在Message stream层次，将大消息切割成小消息，这样可以避免大的低优先级的消息(如视频消息)阻塞小的高优先级的消息(如音频消息或控制消息)。
+
+    - RTMP中时间戳的单位为毫秒(ms)。时间戳为相对于某个时间点的相对值。时间戳的长度为32bit，不考虑回滚的话，最大可表示49天17小时2分钟47.296秒。Timestamp delta单位也是毫秒，为相对于前一个时间戳的一个无符号整数； 可能为24bit或32bit。RTMP Message的时间戳4个字节；大端存储。
+    - 用wireshark转包分析发现， rtmp流的chunk视频流(或音频流)除第一个视频时间戳为绝对时间戳外，后续的时间戳均为timestamp delta，即当前时间戳与上一个时间戳的差值。
+    - 通常情况下， Chunk的时间戳(包括绝对时间戳Timestamp delta)是3个字节。但时间戳值超过0xFFFFFF时，启用Extended Timestamp(4个字节)来表示时间戳。
+    - timestamp delta的值超过16777215 (即16进制的0xFFFFFF)时，这时候这三个字节必须被置为: 0xFFFFFF,以此来标示Extended Timestamp(4字节)将会存在，由Extended Timestamp来表示时间戳。
+
 ## WebRTC
 
 ### 架构
@@ -657,3 +747,41 @@ Analysis of audio and video protocols
 ![module子目录结构1](/images/module子目录结构1.png)
 
 ![module子目录结构2](/images/module子目录结构2.png)
+
+## SRS
+
+- SRS源码获取
+
+```shell
+git clone https://gitee.com/winlinvip/srs.oschina.git srs
+cd srs/trunk
+git remote set-url origin https://github.com/ossrs/srs.git
+git pull
+```
+
+- SRS编译
+
+```shell
+./configure
+make
+```
+
+- 启动SRS服务
+
+```shell
+./objs/srs -c conf/rtmp.conf
+```
+
+- 测试SRS服务
+    
+    - 推流
+
+    ```shell
+    ffmpeg -re -i gx.flv -vcodec copy -acodec copy -f flv -y rtmp://192.168.1.11/live/test
+    ```
+
+    - 拉流
+
+    ```shell
+    ffplay rtmp://192.168.1.11/live/test
+    ```
