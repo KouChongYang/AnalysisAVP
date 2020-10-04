@@ -7,4 +7,4 @@ project(${CURRENT_FOLDER})
 
 # 添加子项目
 add_subdirectory(pushstream)
-
+add_subdirectory(pullstream)
