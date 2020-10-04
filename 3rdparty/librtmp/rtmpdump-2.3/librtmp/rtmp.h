@@ -120,10 +120,10 @@ extern "C"
 		void* sb_ssl;
 	} RTMPSockBuf;
 
-	void RTMPPacket_Reset(RTMPPacket* p);
-	void RTMPPacket_Dump(RTMPPacket* p);
-	int RTMPPacket_Alloc(RTMPPacket* p, int nSize);
-	void RTMPPacket_Free(RTMPPacket* p);
+	DECL	void RTMPPacket_Reset(RTMPPacket* p);
+	DECL	void RTMPPacket_Dump(RTMPPacket* p);
+	DECL	int RTMPPacket_Alloc(RTMPPacket* p, int nSize);
+	DECL	void RTMPPacket_Free(RTMPPacket* p);
 
 #define RTMPPacket_IsReady(a)	((a)->m_nBytesRead == (a)->m_nBodySize)
 

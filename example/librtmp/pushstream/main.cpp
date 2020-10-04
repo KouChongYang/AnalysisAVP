@@ -21,7 +21,8 @@ extern "C"
 #include "rtmp.h"
 }
 
-const int presentime = 5000;
+#define DODELAY 1
+const int presentime = 1000;
 
 int main(int argc, char* argv[])
 {
@@ -62,6 +63,7 @@ int main(int argc, char* argv[])
 	FLVINT32 presize = { 0 };
 	in.read(reinterpret_cast<char*>(&presize), 4);
 
+	RTMPPacket packet = { 0 };
 	auto begintime = RTMP_GetTime();
 	uint32_t timestamp = 0, now = 0;
 	while (true)
@@ -77,16 +79,36 @@ int main(int argc, char* argv[])
 			break;
 
 		timestamp = FLVINT32TOINT(tagheader.timestamp);
-	CALCTIME:
+#if DODELAY
+		CALCTIME :
 		now = RTMP_GetTime() - begintime;
 		if (now < timestamp + presentime)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds((timestamp + presentime - now) / 2));
 			goto CALCTIME;
 		}
-		rtmpres = RTMP_Write(rtmp, data, sizeof(FLVTAGHEADER) + datalen + 4);//tagheader + data + presize
-		if (rtmpres < sizeof(FLVTAGHEADER) + datalen + 4)
+#endif
+
+		//rtmpres = RTMP_Write(rtmp, data, sizeof(FLVTAGHEADER) + datalen + 4);//tagheader + data + presize
+		//if (rtmpres < sizeof(FLVTAGHEADER) + datalen + 4)
+		//	break;
+
+		rtmpres = RTMPPacket_Alloc(&packet, datalen);//分配packet的buffer
+		packet.m_nChannel = 0x03;
+		packet.m_headerType = RTMP_PACKET_SIZE_MEDIUM;
+		packet.m_packetType = tagheader.flvtagtype;
+		packet.m_nTimeStamp = timestamp;
+		packet.m_nInfoField2 = 0;
+		packet.m_hasAbsTimestamp = 0;
+		memcpy(packet.m_body, data + sizeof(FLVTAGHEADER), datalen);
+		packet.m_nBodySize = datalen;
+		rtmpres = RTMP_SendPacket(rtmp, &packet, 0);
+		RTMPPacket_Free(&packet);
+		if (rtmpres <= 0)
+		{
 			break;
+		}
+
 		//std::cout << "timestamp " << timestamp << "ms" << std::endl;
 		delete[]data;
 	}

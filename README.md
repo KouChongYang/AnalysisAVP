@@ -650,7 +650,7 @@ Analysis of audio and video protocols
 
     - 消息主要分为三类: 协议控制消息、数据消息、命令消息等。
     - 协议控制消息
- 
+
         - Message Type ID = 1 2 3 5 6和Message Type ID = 4两大类，主要用于协议内的控制
 
     - 数据消息
@@ -671,9 +671,9 @@ Analysis of audio and video protocols
 
     - RTMP流中视频和音频拥有单独的Chunk Stream ID。比如音频的cs id=20，视频的cs id=21。接收端接收到Chunk之后，根据cs id分别将音频和视频“拼成消息”。
     - RTMP协议最多⽀持65597个⽤户⾃定义chunk stream ID，范围为[3，65599] ，ID 0, 1, 2被协议规范直接使⽤，其中ID值为0, 1分表表示了Basic Header占⽤2个字节和3个字节：
-    - ID值0：代表Basic Header占⽤2个字节，CSID在 [64，319] 之间；
-    - ID值1：代表Basic Header占⽤3个字节，CSID在 [64，65599] 之间；
-    - ID值2：代表该chunk是控制信息和⼀些命令信息。
+        - ID值0：代表Basic Header占⽤2个字节，CSID在 [64，319] 之间；
+        - ID值1：代表Basic Header占⽤3个字节，CSID在 [64，65599] 之间；
+        - ID值2：代表该chunk是控制信息和⼀些命令信息。
     - 当Basic Header为1个字节时，CSID占6位，6位最多可以表示64个数，因此这种情况下CSID在 [0，63] 之间，其中⽤户可⾃定义的范围为 [3，63]。
     - 当Basic Header为2个字节时，CSID占只占8位，第⼀个字节除chunk type占⽤的bit都置为0，第⼆个字节⽤来表示CSID-64，8位可以表示 [0, 255] 共256个数，ID的计算⽅法为（第⼆个字节+64），范围为 [64，319]。
     - 当Basic Header为3个字节时，以在此字段⽤3字节版本编码。ID的计算⽅法为（第三字节*256+第⼆字节+64）（Basic Header是采⽤⼩端存储的⽅式），范围为 [64，65599]。
@@ -773,7 +773,7 @@ make
 ```
 
 - 测试SRS服务
-    
+  
     - 推流
 
     ```shell
