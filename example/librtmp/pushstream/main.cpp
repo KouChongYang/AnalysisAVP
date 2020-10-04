@@ -14,7 +14,7 @@
 #pragma comment(lib, "WS2_32.lib")
 #endif
 
-#include "../../analysis/flv/flv.h"
+#include "../../../analysis/flv/flv.h"
 
 extern "C"
 {
