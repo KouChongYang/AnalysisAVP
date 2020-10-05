@@ -11,7 +11,7 @@
 
  //FLV tag type
 #define FLV_TAG_TYPE_AUDIO    0x08
-#define FLV_TAG_TYPE_VIDIO    0x09
+#define FLV_TAG_TYPE_VIDEO    0x09
 #define FLV_TAG_TYPE_SCRIPT   0x12
 
 //flv video tag frame type
@@ -125,17 +125,19 @@ typedef struct __FLVTAGHEADER
 typedef struct __FLVVIDEOTAG
 {
 	uint8_t codecid : 4;		//编解码器，FLV_VIDEO_CODECID_XXX
-	uint8_t type : 4;			//视频帧类型，AVC_PACKET_XXX
+	uint8_t type : 4;			//视频帧类型，FLV_VIDEO_FRAME_XXX
 	union
 	{
 		//codecid == FLV_VIDEO_CODECID_AVC
 		struct AVCVIDEOPACKE {
-			uint8_t avcpacketype;//AVCPacketType
-			//如果type=1，则为时间cts偏移量；否则，为0。当B帧的存在时，视频解码呈现过程中，dts、pts可能不同，cts的计算公式为 pts - dts/90，单位为毫秒；如果B帧不存在，则cts固定为0。
+			uint8_t avcpacketype;//AVC_PACKET_XXX
+
+			//如果avcpacketype=1，则为时间cts偏移量；否则，为0。当B帧的存在时，视频解码呈现过程中，dts、pts可能不同，cts的计算公式为 pts - dts/90，单位为毫秒；如果B帧不存在，则cts固定为0。
 			FLVINT24 compositiontime;
-			//type=0，则为AVCDecoderConfigurationRecord，H.264 视频解码所需要的参数集（SPS、PPS）
-			//type=1，则为NALU（一个或多个），data[0-3]是数据长度！
-			//如果type=2，则为空
+
+			//avcpacketype=0，则为AVCDecoderConfigurationRecord，H.264 视频解码所需要的参数集（SPS、PPS）
+			//avcpacketype=1，则为NALU（一个或多个），data[0-3]是数据长度！
+			//如果avcpacketype=2，则为空
 			unsigned char avcpacketdata[];
 		}avcvideopacket;
 	}videopacket;

@@ -14,7 +14,7 @@ const char* flv_tag_parse_type(uint8_t type)
 	{
 	case FLV_TAG_TYPE_AUDIO:
 		return "audio tag";
-	case FLV_TAG_TYPE_VIDIO:
+	case FLV_TAG_TYPE_VIDEO:
 		return "video tag";
 	case FLV_TAG_TYPE_SCRIPT:
 		return "script tag";

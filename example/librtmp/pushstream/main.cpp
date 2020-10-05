@@ -70,13 +70,17 @@ int main(int argc, char* argv[])
 	{
 		FLVTAGHEADER tagheader = { 0 };
 		if (!in.read(reinterpret_cast<char*>(&tagheader), sizeof(tagheader)))
+		{
 			break;
+		}
 
 		auto datalen = FLVINT24TOINT(tagheader.datalen);
-		auto data = new char[sizeof(FLVTAGHEADER) + datalen + 4];
+		auto data = new char[sizeof(FLVTAGHEADER) + datalen + sizeof(presize)];
 		memcpy(data, &tagheader, sizeof(FLVTAGHEADER));
-		if (!in.read(data + sizeof(FLVTAGHEADER), datalen + 4))
+		if (!in.read(data + sizeof(FLVTAGHEADER), static_cast<uint64_t>(datalen) + sizeof(presize)))
+		{
 			break;
+		}
 
 		timestamp = FLVINT32TOINT(tagheader.timestamp);
 #if DODELAY
@@ -89,9 +93,13 @@ int main(int argc, char* argv[])
 		}
 #endif
 
-		//rtmpres = RTMP_Write(rtmp, data, sizeof(FLVTAGHEADER) + datalen + 4);//tagheader + data + presize
-		//if (rtmpres < sizeof(FLVTAGHEADER) + datalen + 4)
+		//auto len = sizeof(FLVTAGHEADER) + datalen + sizeof(presize);
+		//rtmpres = RTMP_Write(rtmp, data, len);//tagheader + data + presize
+		//if (rtmpres < len)
+		//{
+		//	std::cout << rtmpres << "\t" << len << std::endl;
 		//	break;
+		//}
 
 		rtmpres = RTMPPacket_Alloc(&packet, datalen);//分配packet的buffer
 		packet.m_nChannel = 0x03;
