@@ -217,7 +217,7 @@ std::ostream& operator<<(std::ostream& os, const PictureParameterSet& pps)
 	return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const AUDIOTAG& audiotag)
+std::ostream& operator<<(std::ostream& os, const FLVAUDIOTAG& audiotag)
 {
 	os << "soundtype : " << flv_audio_parse_type(audiotag.soundtype)
 		<< "\nsoundSize : " << flv_audio_parse_soundsize(audiotag.soundSize)

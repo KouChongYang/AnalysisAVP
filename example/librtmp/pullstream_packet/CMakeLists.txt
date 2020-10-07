@@ -25,9 +25,9 @@ link_directories(${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/../../../3rdparty/librtmp
 endif()
 
 # 添加源码文件到项目
-FILE(GLOB header ./*.h ../../../analysis/flv/*.h)
+FILE(GLOB header ./*.h ../../../analysis/flv/*.h ../../../analysis/aac/*.h)
 aux_source_directory(. SRCS)
-add_executable(${PROJECT_NAME} ${header} ${SRCS} ../../../analysis/flv/flv.cpp)
+add_executable(${PROJECT_NAME} ${header} ${SRCS} ../../../analysis/flv/flv.cpp ../../../analysis/aac/aac.cpp)
 
 # 链接库
 target_link_libraries(${PROJECT_NAME} librtmp_msvc.lib)

@@ -15,6 +15,7 @@
 #endif
 
 #include "../../../analysis/flv/flv.h"
+#include "../../../analysis/aac/aac.h"
 
 extern "C"
 {
@@ -60,8 +61,17 @@ int main(int argc, char* argv[])
 	rtmpres = RTMP_ConnectStream(rtmp, 0);
 
 	RTMPPacket packet = { 0 };
+
 	char nalu[] = { 0x00, 0x00, 0x00, 0x01 };
 	FLVVIDEOTAG* video = nullptr;
+
+	ADTS adts = { 0 };
+	set_syncword(adts, 0xFFF);
+	adts.protection_absent = 1;
+	adts.ID = ADTS_ID_MPEG4;
+	set_adts_buffer_fullness(adts, 0x7FF);
+	FLVAUDIOTAG* audio = nullptr;
+
 	auto rent = 0;
 	while (true)
 	{
@@ -76,6 +86,31 @@ int main(int argc, char* argv[])
 			switch (packet.m_packetType)
 			{
 			case FLV_TAG_TYPE_AUDIO:
+				audio = reinterpret_cast<FLVAUDIOTAG*>(packet.m_body);
+				if (audio->soundFormat == FLV_SOUND_FORMAT_AAC)
+				{
+					switch (audio->audiopacket.aacaudiopacket.aacpackettype)
+					{
+					case AAC_PACKET_TYPE_HEAD:
+					{
+						auto config = reinterpret_cast<AudioSpecificConfig*>(audio->audiopacket.aacaudiopacket.data);
+						set_channel_configuration(adts, config->ChannelConfiguration);
+						adts.sampling_frequency_index = FVLSAMPLEFREQUENCYINDEX((*config));
+						adts.profile = config->AudioObjectType - 1;
+					}
+					break;
+					case AAC_PACKET_TYPE_RAW:
+					{
+						auto datasize = packet.m_nBodySize - offsetof(FLVAUDIOTAG, audiopacket.aacaudiopacket.data);
+						set_aac_frame_length(adts, datasize + sizeof(adts));
+						aac.write(reinterpret_cast<char*>(&adts), sizeof(adts));
+						aac.write(reinterpret_cast<char*>(audio->audiopacket.aacaudiopacket.data), datasize);
+					}
+					break;
+					default:
+						break;
+					}
+				}
 				break;
 			case FLV_TAG_TYPE_VIDEO:
 				video = reinterpret_cast<FLVVIDEOTAG*>(packet.m_body);
@@ -85,17 +120,14 @@ int main(int argc, char* argv[])
 					{
 					case AVC_PACKET_HEADER:
 					{
-						AVCDecoderConfigurationRecordHeader* configheader =
-							reinterpret_cast<AVCDecoderConfigurationRecordHeader*>(video->videopacket.avcvideopacket.avcpacketdata);
+						auto configheader = reinterpret_cast<AVCDecoderConfigurationRecordHeader*>(video->videopacket.avcvideopacket.avcpacketdata);
 
-						SequenceParameterSet* sps =
-							reinterpret_cast<SequenceParameterSet*>(configheader->data);
+						auto sps = reinterpret_cast<SequenceParameterSet*>(configheader->data);
 						auto datasize = FLVINT16TOINT((sps->sequenceParameterSetLength));
 						h264.write(nalu, sizeof(nalu));
 						h264.write(reinterpret_cast<char*>(sps->sequenceParameterSetNALUnit), datasize);
 
-						PictureParameterSet* pps =
-							reinterpret_cast<PictureParameterSet*>(sps->sequenceParameterSetNALUnit + FLVINT16TOINT(sps->sequenceParameterSetLength));
+						auto pps = reinterpret_cast<PictureParameterSet*>(sps->sequenceParameterSetNALUnit + FLVINT16TOINT(sps->sequenceParameterSetLength));
 						datasize = FLVINT16TOINT((pps->pictureParameterSetLength));
 						h264.write(nalu, sizeof(nalu));
 						h264.write(reinterpret_cast<char*>(pps->pictureParameterSetNALUnit), datasize);
@@ -118,6 +150,7 @@ int main(int argc, char* argv[])
 						break;
 					}
 				}
+
 			}
 		}
 	}

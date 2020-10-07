@@ -178,11 +178,11 @@ typedef struct __FLVAUDIOTAG
 	{
 		//soundFormat == FLV_SOUND_FORMAT_AAC
 		struct AACAUDIOPACKET {
-			uint8_t aacpackettype;
+			uint8_t aacpackettype;//AAC_PACKET_TYPE_XXX
 			uint8_t data[];
 		}aacaudiopacket;
 	}audiopacket;
-}AUDIOTAG;
+}FLVAUDIOTAG;
 typedef struct __AudioSpecificConfig
 {
 	uint8_t SamplingFrequencyIndexH : 3;
@@ -218,5 +218,5 @@ std::ostream& operator<<(std::ostream& os, const FLVVIDEOTAG& videotag);
 std::ostream& operator<<(std::ostream& os, const AVCDecoderConfigurationRecordHeader& configureHeader);
 std::ostream& operator<<(std::ostream& os, const SequenceParameterSet& sps);
 std::ostream& operator<<(std::ostream& os, const PictureParameterSet& sps);
-std::ostream& operator<<(std::ostream& os, const AUDIOTAG& audiotag);
+std::ostream& operator<<(std::ostream& os, const FLVAUDIOTAG& audiotag);
 std::ostream& operator<<(std::ostream& os, const AudioSpecificConfig& audiotag);
