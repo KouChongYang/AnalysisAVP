@@ -11,7 +11,6 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-#pragma comment(lib, "WS2_32.lib")
 #endif
 
 #include "../../../analysis/flv/flv.h"

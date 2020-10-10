@@ -24,13 +24,6 @@
 
 #ifdef _WIN32
 
-#ifdef _MSC_VER	/* MSVC */
- //#define snprintf _snprintf
-#define strcasecmp stricmp
-#define strncasecmp strnicmp
- //#define vsnprintf _vsnprintf
-#endif
-
 #ifdef _XBOX
 #include <xtl.h>
 #include <winsockx.h>
@@ -42,6 +35,8 @@
 #else /* !_XBOX */
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
 #endif
 
 #define GetSockError()	WSAGetLastError()

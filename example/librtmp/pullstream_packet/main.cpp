@@ -11,16 +11,13 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-#pragma comment(lib, "WS2_32.lib")
 #endif
 
 #include "../../../analysis/flv/flv.h"
 #include "../../../analysis/aac/aac.h"
 
-extern "C"
-{
+
 #include "rtmp.h"
-}
 
 int main(int argc, char* argv[])
 {

@@ -31,11 +31,6 @@
 #include "rtmp_sys.h"
 #include "log.h"
 
-#ifdef _WIN32
-#pragma comment(lib, "ws2_32.lib")
-#pragma comment(lib, "winmm.lib")
-#endif
-
 #ifdef CRYPTO
 #ifdef USE_POLARSSL
 #include <polarssl/havege.h>
@@ -47,8 +42,6 @@
 #endif
 TLS_CTX RTMP_TLS_ctx;
 #endif
-
-typedef long off_t;
 
 #define RTMP_SIG_SIZE 1536
 #define RTMP_LARGE_HEADER_SIZE 12
@@ -390,7 +383,7 @@ RTMP_SetupStream(RTMP* r,
 	if (sockshost->av_len)
 	{
 		const char* socksport = strchr(sockshost->av_val, ':');
-		char* hostname = strdup(sockshost->av_val);
+		char* hostname = _strdup(sockshost->av_val);
 
 		if (socksport)
 			hostname[socksport - sockshost->av_val] = '\0';
@@ -1254,10 +1247,10 @@ RTMP_ClientPacket(RTMP* r, RTMPPacket* packet)
 	return bHasMediaPacket;
 }
 
-//#ifdef _DEBUG
+#ifdef _DEBUG
 //extern FILE* netstackdump;
 //extern FILE* netstackdump_read;
-//#endif
+#endif
 
 static int
 ReadN(RTMP* r, char* buffer, int n)
@@ -1326,9 +1319,9 @@ ReadN(RTMP* r, char* buffer, int n)
 				SendBytesReceived(r);
 		}
 		/*RTMP_Log(RTMP_LOGDEBUG, "%s: %d bytes\n", __FUNCTION__, nBytes); */
-//#ifdef _DEBUG
-//		fwrite(ptr, 1, nBytes, netstackdump_read);
-//#endif
+#ifdef _DEBUG
+		//fwrite(ptr, 1, nBytes, netstackdump_read);
+#endif
 
 		if (nBytes == 0)
 		{
@@ -3537,9 +3530,9 @@ RTMPSockBuf_Send(RTMPSockBuf* sb, const char* buf, int len)
 {
 	int rc;
 
-	//#ifdef _DEBUG
-	//	fwrite(buf, 1, len, netstackdump);
-	//#endif
+#ifdef _DEBUG
+	//fwrite(buf, 1, len, netstackdump);
+#endif
 
 #if defined(CRYPTO) && !defined(NO_SSL)
 	if (sb->sb_ssl)

@@ -70,8 +70,6 @@ extern TLS_CTX RTMP_TLS_ctx;
 
 #endif /* CRYPTO */
 
-
-
 #define	AGENT	"Mozilla/5.0"
 
 HTTPResult
@@ -110,7 +108,7 @@ HTTP_get(struct HTTP_ctx* http, const char* url, HTTP_read_callback* cb)
 #else
 		return HTTPRES_BAD_REQUEST;
 #endif
-}
+	}
 
 	p1 = strchr(url + 4, ':');
 	if (!p1 || strncmp(p1, "://", 3))
