@@ -389,6 +389,33 @@ Analysis of audio and video protocols
 
 ## FFmpeg
 
+- 编译
+
+    - Ubuntu
+
+        ```shell
+        # 安装环境依赖
+        sudo apt-get update 
+        sudo apt-get -y install autoconf automake build-essential cmake git-core libass-dev libfreetype6-dev libsdl2-dev libtool libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev pkg-config texinfo wget zlib1g-dev
+        # 安装依赖库
+        sudo apt-get -y install nasm
+        sudo apt-get -y install yasm
+        sudo apt-get -y install libx264-dev
+        sudo apt-get -y install libx265-dev libnuma-dev
+        sudo apt-get -y install libvpx-dev
+        sudo apt-get -y install libfdk-aac-dev
+        sudo apt-get -y install libmp3lame-dev
+        sudo apt-get -y install libopus-dev
+        # 下载ffmpeg源码
+        wget https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2
+        # 编译
+        tar xjvf ffmpeg-snapshot.tar.bz2
+        cd ffmpeg
+        ./configure --prefix="$PWD/ffmpeg_build" --pkg-config-flags="--static" --extra-cflags="-I$PWD/ffmpeg_build/include" --extra-ldflags="-L$PWD/ffmpeg_build/lib" --extra-libs="-lpthread -lm" --bindir="$PWD/ffmpeg_build/bin" --enable-gpl --enable-libass --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 --enable-nonfree
+        make -j 8
+        make install
+        ```
+
 - 数据结构
 
     - AVFormatContext
