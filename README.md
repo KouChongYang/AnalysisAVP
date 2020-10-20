@@ -872,42 +872,6 @@ Analysis of audio and video protocols
         | pts | 5B | 33bit值 |
         | dts | 5B | 33bit值 |
 
-## WebRTC
-
-### 架构
-
-![WebRTC架构](/images/WebRTC架构.png)
-
-整体架构分为应用层和核心层。应用层提供实现相关业务逻辑Api，核心层提供应用层需要的核心API。
-
-其中核心层分为四层：
-
-第一层为C++ API，其中最主要的是**PeerConnection**，这个接口需要重点学习和掌握。
-
-第二层为Session层，为上下文管理层，应用里的音频和视频及非音视频的数据处理逻辑都可以在这层进行。
-
-第三层为引擎和传输层，包括音频引擎和视频引擎，以及音视频的传输，这也是整个架构中最重要的一层。
-
-第四层与硬件相关，包括音视频的采集和网络的IO。
-
-注：WebRTC的核心层无视频的渲染，所有的渲染都需要应用层自行实现。
-
-这里着重提一下第三层：
-
-- Voice Engine（音频引擎模块）：包含编码能力、音频缓冲Buff（防网络抖动）、回音消除（实时连麦关键点）。
-- Video Engine（视频引擎模块）：包含编码能力（如VP8）、视频缓冲、图像增强。
-- Transport（传输模块）：传输协议在底层使用UDP，上层使用的RTP（为安全起见增加SRTP），还有P2P机制，包括STUN、TURN 和 ICE。
-
-### 目录结构
-
-![WebRTC目录结构1](/images/WebRTC目录结构1.png)
-
-![WebRTC目录结构2](/images/module子目录结构2.png)
-
-![module子目录结构1](/images/module子目录结构1.png)
-
-![module子目录结构2](/images/module子目录结构2.png)
-
 ## SRS
 
 - SRS源码获取
@@ -947,3 +911,48 @@ Analysis of audio and video protocols
         ffplay rtmp://127.0.0.1/live/test
         ffplay http://127.0.0.1/live/test.m3u8
         ```
+
+## WebRTC
+
+- WebRTC简介
+
+    - WebRTC（Web Real­Time Communication）是 Google于2010以6829万美元从 Global IP Solutions 公司购买，并于2011年将其开源，旨在建立一个互联网浏览器间的实时通信的平台，让 WebRTC技术成为 H5标准之一。
+    - WebRTC虽然冠以“web”之名，但并不受限于传统互联网应用或浏览器的终端运行环境。实际上无论终端运行环境是浏览器、桌面应用、移动设备（Android或iOS）还是IoT设备，只要IP连接可到达且符合WebRTC规范就可以互通。这一点释放了大量智能终端（或运行在智能终端上的app）的实时通信能力，打开了许多对于实时交互性要求较高的应用场景的想象空间，譬如在线教育、视频会议、视频社交、远程协助、远程操控等等都是其合适的应用领域。全球领先的技术研究和咨询公司Technavio最近发布了题为“全球网络实时通讯（WebRTC）市场，2017­2021”的报告。报告显示，2017­2021年期间，全球网络实时通信（WebRTC）市场将以34.37％的年均复合增长率增长，增长十分迅速。增长主要来自北美、欧洲及亚太地区。
+
+- WebRTC框架
+
+    ![WebRTC架构](./images/WebRTC架构.png)
+
+- WebRTC通话原理
+
+    - 媒体协商
+
+        - 有一个专门的协议，称为Session Description Protocol(SDP)，可用于描述上述这类信息，在WebRTC中，参与视频通讯的双方必须先交换SDP信息，这样双方才能知根知底，而交换SDP的过程，也称为"媒体协商"。
+
+    - 网络协商
+
+        ![WebRTC网络协商](./images/WebRTC网络协商.png)
+        - 彼此要了解对方的网络情况，这样才有可能找到一条相互通讯的链路
+        (1)获取外网IP地址映射；
+        (2)通过信令服务器（signal server）交换"网络信息"。
+        - 理想的网络情况是每个浏览器的电脑都是私有公网IP，可以直接进行点对点连接。
+        - 实际情况是：我们的电脑和电脑之前或大或小都是在某个局域网中，需要NAT（Network Address Translation，网络地址转换）。
+        - 在解决WebRTC使用过程中的上述问题的时候，我们需要用到STUN和TURN。
+
+    - STUN
+
+        - STUN（Session Traversal Utilities for NAT，NAT会话穿越应用程序）是一种网络协议，它允许位于NAT（或多重NAT）后的客户端找出自己的公网地址，查出自己位于哪种类型的NAT之后以及NAT为某一个本地端口所绑定的Internet端端口。这些信息被用来在两个同时处于NAT路由器之后的主机之间创建UDP通信。该协议由RFC 5389定义。
+
+    - TURN
+        
+        - TURN的全称为Traversal Using Relays around NAT，是STUN/RFC5389的一个拓展，主要添加了Relay功能。如果终端在NAT之后，那么在特定的情景下，有可能使得终端无法和其对等端（peer）进行直接的通信，这时就需要公网的服务器作为一个中继，对来往的数据进行转发。这个转发的协议就被定义为TURN。
+
+    - 信令服务器
+
+        ![信令服务器](./images/信令服务器.png)
+        - 在基于WebRTC API开发应用（APP）时，可以将彼此的APP连接到信令服务器（Signal Server，一般搭建在公网，或者两端都可以访问到的局域网），借助信令服务器，就可以实现上面提到的SDP媒体信息及Candidate网络信息交换。信令服务器不只是交互媒体信息sdp和网络信息candidate，不如房间管理和人员进出。
+
+    - 一对一通话
+
+        ![WebRTC一对一通话](./images/WebRTC一对一通话.png)
+        - 在一对一通话场景中，每个 Peer均创建有一个 PeerConnection 对象，由一方主动发 Offer SDP，另一方则应答AnswerSDP，最后双方交换 ICE Candidate 从而完成通话链路的建立。但是在中国的网络环境中，据一些统计数据显示，至少1半的网络是无法直接穿透打通，这种情况下只能借助TURN服务器中转。
