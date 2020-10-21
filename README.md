@@ -944,15 +944,50 @@ Analysis of audio and video protocols
         - STUN（Session Traversal Utilities for NAT，NAT会话穿越应用程序）是一种网络协议，它允许位于NAT（或多重NAT）后的客户端找出自己的公网地址，查出自己位于哪种类型的NAT之后以及NAT为某一个本地端口所绑定的Internet端端口。这些信息被用来在两个同时处于NAT路由器之后的主机之间创建UDP通信。该协议由RFC 5389定义。
 
     - TURN
-        
+      
         - TURN的全称为Traversal Using Relays around NAT，是STUN/RFC5389的一个拓展，主要添加了Relay功能。如果终端在NAT之后，那么在特定的情景下，有可能使得终端无法和其对等端（peer）进行直接的通信，这时就需要公网的服务器作为一个中继，对来往的数据进行转发。这个转发的协议就被定义为TURN。
 
     - 信令服务器
 
         ![信令服务器](./images/信令服务器.png)
+
         - 在基于WebRTC API开发应用（APP）时，可以将彼此的APP连接到信令服务器（Signal Server，一般搭建在公网，或者两端都可以访问到的局域网），借助信令服务器，就可以实现上面提到的SDP媒体信息及Candidate网络信息交换。信令服务器不只是交互媒体信息sdp和网络信息candidate，不如房间管理和人员进出。
 
     - 一对一通话
 
         ![WebRTC一对一通话](./images/WebRTC一对一通话.png)
+        
         - 在一对一通话场景中，每个 Peer均创建有一个 PeerConnection 对象，由一方主动发 Offer SDP，另一方则应答AnswerSDP，最后双方交换 ICE Candidate 从而完成通话链路的建立。但是在中国的网络环境中，据一些统计数据显示，至少1半的网络是无法直接穿透打通，这种情况下只能借助TURN服务器中转。
+
+- 安装node.js
+
+    ```shell
+    # 下载
+    wget https://nodejs.org/dist/v15.0.0/node-v15.0.0-linux-x64.tar.xz
+    # 解压
+    tar -xvf node-v15.0.0-linux-x64.tar.xz
+    # 进入目录
+    cd node-v15.0.0-linux-x64
+    # 执行软连接
+    sudo ln ‐s /mnt/e/ubuntu/node-v15.0.0-linux-x64/bin/npm /usr/local/bin/
+    sudo ln ‐s /mnt/e/ubuntu/node-v15.0.0-linux-x64/bin/node /usr/local/bin/
+    ```
+
+- 安装coturn穿透和转发服务器
+
+    ```shell
+    # 安装依赖
+    sudo apt‐get install libssl‐dev
+    sudo apt‐get install libevent‐dev
+    # 下载源码
+    git clone https://github.com/coturn/coturn
+    cd coturn
+    # 编译安装
+    ./configure
+    make -j 8
+    sudo make install
+    # 启动
+    turnserver ‐L 0.0.0.0 ‐a ‐u gongluck:123456
+    # 浏览器测试
+    https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/
+    ```
