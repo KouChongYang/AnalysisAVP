@@ -3,11 +3,11 @@ Analysis of audio and video protocols
 
 ## 音视频录制原理
 
-![音视频录制原理](/images/音视频录制原理.png)
+![音视频录制原理](./images/音视频录制原理.png)
 
 ## 音视频播放原理
 
-![音视频播放原理](/images/音视频播放原理.png)
+![音视频播放原理](./images/音视频播放原理.png)
 
 ## YUV格式
 
@@ -121,13 +121,13 @@ Analysis of audio and video protocols
 
 - H264采⽤了独特的I帧、P帧和B帧策略来实现，连续帧之间的压缩
 
-    ![h264层次](/images/h264层次.png)
+    ![h264层次](./images/h264层次.png)
 
 - H264将视频分为连续的帧进⾏传输，在连续的帧之间使⽤I帧、P帧和B帧。同时对于帧内⽽⾔，将图像分块为⽚、宏块和字块进⾏分⽚传输；通过这个过程实现对视频⽂件的压缩包装。
 
 - ⼀个序列的第⼀个图像叫做 IDR 图像（⽴即刷新图像），IDR 图像都是 I 帧图像。I和IDR帧都使⽤帧内预测。I帧不⽤参考任何帧，但是之后的P帧和B帧是有可能参考这个I帧之前的帧的。IDR就不允许这样。其核⼼作⽤是，是为了解码的重同步，当解码器解码到 IDR 图像时，⽴即将参考帧队列清空，将已解码的数据全部输出或抛弃，重新查找参数集，开始⼀个新的序列。这样，如果前⼀个序列出现重⼤错误，在这⾥可以获得重新同步的机会。IDR图像之后的图像永远不会使⽤IDR之前的图像的数据来解码。
 
-    ![gop](/images/gop.png)
+    ![gop](./images/gop.png)
 
 - SPS：序列参数集，SPS中保存了⼀组编码视频序列(Coded video sequence)的全局参数。
 - PPS：图像参数集，对应的是⼀个序列中某⼀幅图像或者某⼏幅图像的参数。
@@ -136,20 +136,20 @@ Analysis of audio and video protocols
 - B帧: 双向预测内插编码帧，则要参考其前⼀个I或者P帧及其后⾯的⼀个P帧来⽣成⼀张完整的图⽚。  
 - 发I帧之前，⾄少要发⼀次SPS和PPS。 
 
-    ![H.264码流分层结构](/images/H.264码流分层结构.png)
+    ![H.264码流分层结构](./images/H.264码流分层结构.png)
 
 - NAL层，视频数据网络抽象层（Network Abstraction Layer）
 - VCL层，视频数据编码层（Video Coding Layer）
 
-    ![RBSP与SODB](/images/RBSP与SODB.png)
+    ![RBSP与SODB](./images/RBSP与SODB.png)
 
 - SODB，数据位串（String Of Data Bits）。原始数据比特流，长度不一定是8的倍数，故需要补齐。由VCL层产生。
 
 - RBSP，原始字节序列负载（Raw Byte Sequence Playload）。SODB + trailing bits，算法是如果SODB最后一个字节不对齐，则补1和多个0。
 
-    ![NALU](/images/NALU.png)
+    ![NALU](./images/NALU.png)
 
-    ![NAL_Header](/images/NAL_Header.png)
+    ![NAL_Header](./images/NAL_Header.png)
 
 - NALU，NAL单元。NAL Header（1B）+ RBSP。
 - H.264标准指出，当数据流是储存在介质上时，在每个NALU前添加起始码：0x000001或0x00000001，⽤来指示⼀个NALU的起始和终⽌位置 。
@@ -178,17 +178,17 @@ Analysis of audio and video protocols
 
 - ADIF，音频数据交换格式（Audio Data Interchange Format）。这种格式的特征是可以确定的找到这个音频数据的开始，不需进行在音频数据流中间开始的解码，即它的解码必须在明确定义的开始处进行。故这种格式常用在磁盘文件中。
 
-    ![ADIF](/images/ADIF.png)
+    ![ADIF](./images/ADIF.png)
 
-    ![AAC](/images/AAC.png)
+    ![AAC](./images/AAC.png)
 
-    ![ADTS](/images/ADTS.png)
+    ![ADTS](./images/ADTS.png)
 
 - ADTS，音频数据传输流（Audio Data Transport Stream）。这种格式的特征是它是一个有同步字的比特流，解码可以在这个流中任何位置开始。它的特征类似于mp3数据流格式。
 
-    ![ADTS的固定头信息](/images/ADTS的固定头信息.png)
+    ![ADTS的固定头信息](./images/ADTS的固定头信息.png)
 
-    ![ADTS的可变头信息](/images/ADTS的可变头信息.png)
+    ![ADTS的可变头信息](./images/ADTS的可变头信息.png)
 
     - 每⼀帧的ADTS的头⽂件都包含了⾳频的采样率，声道，帧⻓度等信息，这样解码器才能解析读取。⼀般情况下ADTS的头信息都是7个字节，分为2部分：
 
@@ -212,11 +212,11 @@ Analysis of audio and video protocols
     
     - sampling_frequency_index：表示使⽤的采样率下标，通过这个下标在Sampling Frequencies[ ]数组中查找得知采样率的值。  
     
-        ![Sampling Frequencies](/images/Sampling_Frequencies.png)
+        ![Sampling Frequencies](./images/Sampling_Frequencies.png)
     
     - channel_configuration: 表示声道数，⽐如2表示⽴体声双声道
     
-        ![channel configuration](/images/channel_configuration.png)
+        ![channel configuration](./images/channel_configuration.png)
     
     - frame_length : ⼀个ADTS帧的⻓度包括ADTS头和AAC原始流
         - frame length, this value must include 7 or 9 bytes of header length:
@@ -230,9 +230,9 @@ Analysis of audio and video protocols
 
 ## FLV
 
-![flv文件结构](/images/flv文件结构.png)
+![flv文件结构](./images/flv文件结构.png)
 
-![flv详细文件结构](/images/flv详细文件结构.png)
+![flv详细文件结构](./images/flv详细文件结构.png)
 
 - FLV(Flash Video)是Adobe公司推出的⼀种流媒体格式，由于其封装后的⾳视频⽂件体积⼩、封装简单等特点，⾮常适合于互联⽹上使⽤。⽬前主流的视频⽹站基本都⽀持FLV。  
 
@@ -279,7 +279,7 @@ Analysis of audio and video protocols
 
 - Tag⼀般可以分为3种类型：脚本(帧)数据类型、⾳频数据类型、视频数据。FLV数据以⼤端序进⾏存储，在解析时需要注意。
 
-    ![flv解析过程](/images/flv解析过程.png)
+    ![flv解析过程](./images/flv解析过程.png)
 
 - ⼀个FLV⽂件，每种类型的tag都属于⼀个流，也就是⼀个flv⽂件最多只有⼀个⾳频流，⼀个视频流，不存在多个独⽴的⾳视频流在⼀个⽂件的情况。
 
@@ -289,7 +289,7 @@ Analysis of audio and video protocols
 
 - **Script Tag Data结构(脚本类型、帧类型)**
 
-    ![amf](/images/amf.png)
+    ![amf](./images/amf.png)
     
     - 该类型Tag⼜被称为MetaData Tag,存放⼀些关于FLV视频和⾳频的元信息，⽐如：duration、width、height等。通常该类型Tag会作为FLV⽂件的第⼀个tag，并且只有⼀个，跟在File Header后。
     
@@ -363,7 +363,7 @@ Analysis of audio and video protocols
     
     - 第⼆个字节开始为⾳频数据（需要判断该数据是真正的⾳频数据，还是⾳频config信息）。
     
-        ![aac audio data](/images/aac_audio_data.png)
+        ![aac audio data](./images/aac_audio_data.png)
     
 - **Video Tag Data结构(视频类型)** 
 
@@ -468,7 +468,7 @@ Analysis of audio and video protocols
 
     - AVPacket
 
-        ![AVPacket常用函数](/images/AVPacket常用函数.png)
+        ![AVPacket常用函数](./images/AVPacket常用函数.png)
 
         - pts：显示时间戳
         - dts：解码时间戳
@@ -479,7 +479,7 @@ Analysis of audio and video protocols
 
     - AVFrame
       
-        ![AVFrame常用函数](/images/AVFrame常用函数.png)
+        ![AVFrame常用函数](./images/AVFrame常用函数.png)
         
         - data：解码后的图像像素数据（音频采样数据）
         - linesize：对视频来说是图像中一行像素的大小；对音频来说是整个音频帧的大小
@@ -871,6 +871,29 @@ Analysis of audio and video protocols
         | pes data length | 1B | 后⾯数据的⻓度，取值5或10 |
         | pts | 5B | 33bit值 |
         | dts | 5B | 33bit值 |
+
+## WebSocket
+
+- WebSocket 是 HTML5 开始提供的一种在单个 TCP 连接上进行全双工通讯的协议。
+
+- WebSocket 使得客户端和服务器之间的数据交换变得更加简单，允许服务端主动向客户端推送数据。在 WebSocket API 中，浏览器和服务器只需要完成一次握手，两者之间就直接可以创建持久性的连接，并进行双向数据传输。  
+
+    ![Ajax和WebSocket](./images/Ajax和WebSocket.png)
+
+- 浏览器通过 JavaScript 向服务器发出建立 WebSocket 连接的请求，连接建立以后，客户端和服务器端就可以通过TCP 连接直接交换数据。
+
+- 当你获取 Web Socket 连接后，你可以通过 send() 方法来向服务器发送数据，并通过onmessage 事件来接收服务器返回的数据。
+
+- 为了建立一个 WebSocket 连接，客户端浏览器首先要向服务器发起一个 HTTP 请求，这个请求和通常的 HTTP 请求不同，包含了一些附加头信息，其中附加头信息"Upgrade: WebSocket"表明这是一个申请协议升级的 HTTP 请求，服务器端解析这些附加的头信息然后产生应答信息返回给客户端，客户端和服务器端的 WebSocket 连接就建立起来了，双方就可以通过这个连接通道自由的传递信息，并且这个连接会持续存在直到客户端或者服务器端的某一方主动的关闭连接。
+
+- 服务器端使用websocket需要安装nodejs-­websocket
+
+    ```shell
+    cd 工程目录
+    sudo npm init
+    #创建package.json文件
+    sudo npm install nodejs-websocket
+    ```
 
 ## SRS
 
