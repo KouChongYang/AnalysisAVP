@@ -1097,6 +1097,9 @@ Analysis of audio and video protocols
         	location /ws {
         		proxy_pass http://websocket;
         		proxy_http_version 1.1;
+        		proxy_connect_timeout 4s; #配置点1
+        		proxy_read_timeout 6000s; #配置点2，如果没效，可以考虑这个时间配置长一点
+        		proxy_send_timeout 6000s; #配置点3
         		proxy_set_header Upgrade $http_upgrade;
         		proxy_set_header Connection $connection_upgrade;
         	}

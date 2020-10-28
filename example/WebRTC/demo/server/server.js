@@ -292,7 +292,9 @@ var server = ws
       // 设置客户端连接的关闭回调
       conn.on("close", function (code, reason) {
         console.info(
-          conn.client.uid + " close : " + code + ", reason : " + reason
+          conn.client.uid
+            ? conn.client.uid
+            : "local" + " close : " + code + ", reason : " + reason
         );
         if (conn.client != null) {
           handleLeave(
