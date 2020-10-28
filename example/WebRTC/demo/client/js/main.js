@@ -3,7 +3,7 @@
 "use strict";
 
 // 服务器地址
-const ServerWebsocket = "wss://www.gongluck.icu:8099/ws";
+const ServerWebsocket = "wss://www.gongluck.icu:8098/ws";
 const Coturn = "www.gongluck.icu:3478";
 
 // 信令
