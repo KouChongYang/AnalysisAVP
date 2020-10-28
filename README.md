@@ -1,4 +1,4 @@
-AnalysisAVP
+## AnalysisAVP
 
 Analysis of audio and video protocols
 
@@ -39,7 +39,7 @@ Analysis of audio and video protocols
 
     - I帧是P帧和B帧的参考帧(其质量直接影响到同组中以后各帧的质量);
 
-    - I帧是帧组GOP的基础帧(第一帧),在一组中只有一个I帧;
+    - IDR帧是帧组GOP的基础帧(第一个(I)帧),在一组GOP中只有一个IDR帧;
 
     - I帧不需要考虑运动矢量;
 - **P** 帧（**Predicted frames**）：根据本帧与相邻的前一帧（I帧或P帧）的不同点来压缩本帧数据，同时利用了空间和时间上的相关性。
