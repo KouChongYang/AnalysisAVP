@@ -152,10 +152,12 @@ function handleJoin(message, conn) {
       conn.sendText(msg);
     }
   }
+
+  conn.client = client;
 }
 
 // 处理leave信令
-function handleLeave(message) {
+function handleLeave(message, force) {
   var roomid = message.roomid;
   var uid = message.uid;
   console.info("uid: " + uid + " leave room " + roomid);
@@ -174,13 +176,15 @@ function handleLeave(message) {
     var client = roomMap.get(id);
     if (client) {
       if (uid == id) {
-        // 通知删除成功
-        var jsonmsg = {
-          cmd: SIGNAL_TYPE_RESP_LEAVE,
-          uid: uid,
-        };
-        var msg = JSON.stringify(jsonmsg);
-        client.conn.sendText(msg);
+        if (!force) {
+          // 通知删除成功
+          var jsonmsg = {
+            cmd: SIGNAL_TYPE_RESP_LEAVE,
+            uid: uid,
+          };
+          var msg = JSON.stringify(jsonmsg);
+          client.conn.sendText(msg);
+        }
       } else {
         // 通知房间中的其他客户端
         var jsonMsg = {
@@ -273,7 +277,7 @@ var server = ws
             handleJoin(jsonMsg, conn);
             break;
           case SIGNAL_TYPE_LEAVE:
-            handleLeave(jsonMsg);
+            handleLeave(jsonMsg, false);
             break;
           case SIGNAL_TYPE_OFFER:
             handleOffer(jsonMsg);
@@ -287,11 +291,23 @@ var server = ws
       });
       // 设置客户端连接的关闭回调
       conn.on("close", function (code, reason) {
-        console.info("close : " + code + ", reason : " + reason);
+        console.info(
+          conn.client.uid + " close : " + code + ", reason : " + reason
+        );
+        if (conn.client != null) {
+          handleLeave(
+            {
+              cmd: SIGNAL_TYPE_LEAVE,
+              roomid: conn.client.roomid,
+              uid: conn.client.uid,
+            },
+            true
+          );
+        }
       });
       // 设置客户端连接的错误回调
       conn.on("error", function (err) {
-        console.info("error : " + err);
+        console.error("error : " + err);
       });
     }
   )

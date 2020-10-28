@@ -1,4 +1,5 @@
-# AnalysisAVP
+AnalysisAVP
+
 Analysis of audio and video protocols
 
 ## 音视频录制原理
@@ -1006,11 +1007,109 @@ Analysis of audio and video protocols
     git clone https://github.com/coturn/coturn
     cd coturn
     # 编译安装
-    ./configure
+    ./configure prefix=/mnt/e/ubuntu/coturn/bin/
     make -j 8
     sudo make install
     # 启动
-    turnserver ‐L 0.0.0.0 ‐a ‐u gongluck:123456
+    turnserver --min-port 40000 --max-port 60000 -L 0.0.0.0 -a -u gongluck:123456 -v -f -r nort.gov
     # 浏览器测试
     https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/
     ```
+
+- 安装nginx
+
+    ```shell
+    # 安装依赖
+    sudo apt-get update
+    sudo apt-get install build-essential libtool -y
+    sudo apt-get install libpcre3 libpcre3-dev -y
+    sudo apt-get install zlib1g-dev -y
+    sudo apt-get install openssl -y
+    #下载nginx
+    wget http://nginx.org/download/nginx-1.19.0.tar.gz
+    tar zxvf nginx-1.19.0.tar.gz
+    cd nginx-1.19.0/
+    # 配置，支持https
+    ./configure --with-http_ssl_module
+    # 编译
+    make -j 8
+    # 安装
+    sudo make install
+    # 启动
+    sudo /usr/local/nginx/sbin/nginx
+    # 停止
+    sudo /usr/local/nginx/sbin/nginx -s stop
+    # 重新加载配置文件
+    sudo /usr/local/nginx/sbin/nginx -s reload
+    ```
+    
+- 生成证书
+
+    ```shell
+    mkdir -p /root/cert
+    cd /root/cert
+    # CA私钥
+    openssl genrsa -out key.pem 2048
+    # 自签名证书
+    openssl req -new -x509 -key key.pem -out cert.pem -days 1095
+    ```
+
+- 配置Web服务
+
+    - 创建webrtc-­https.conf文件：
+
+        ```shell
+        server{
+        	listen 443 ssl;
+        	ssl_certificate /root/cert/cert.pem;
+        	ssl_certificate_key /root/cert/key.pem;
+        	charset utf‐8;
+        	# ip地址或者域名
+        	server_name www.gongluck.icu;
+        	location / {
+        		add_header 'Access-Control-Allow-Origin' '*';
+        		add_header 'Access-Control-Allow-Credentials' 'true';
+        		add_header 'Access-Control-Allow-Methods' '*';
+        		add_header 'Access-Control-Allow-Headers' 'Origin, X-Requested-With, Content-Type,Accept';
+        	# web页面所在目录
+        	root /code/AnalysisAVP/example/WebRTC/demo/client/;
+        	index index.php index.html index.htm;
+        	}
+        }
+        ```
+
+    - 创建webrtc-websocket-proxy.conf文件：
+
+        ```shell
+        map $http_upgrade $connection_upgrade {
+        	default upgrade;
+    	'' close;
+        	}
+    	upstream websocket {
+        		server www.gongluck.icu:8099;
+        	}
+        	server {
+        		listen 8098 ssl;
+        		#ssl on;
+        		ssl_certificate /root/cert/cert.pem;
+        		ssl_certificate_key /root/cert/key.pem;
+        		server_name www.gongluck.icu;
+        	location /ws {
+        		proxy_pass http://websocket;
+        		proxy_http_version 1.1;
+        		proxy_set_header Upgrade $http_upgrade;
+        		proxy_set_header Connection $connection_upgrade;
+        	}
+        }
+        ```
+    
+    - 编辑nginx.conf文件，在末尾}之前添加包含文件：
+    
+        ```shell
+        include /code/AnalysisAVP/example/WebRTC/demo/client/webrtc-https.conf;
+        include /code/AnalysisAVP/example/WebRTC/demo/client/webrtc-websocket-proxy.conf;
+        ```
+    
+        
+    
+

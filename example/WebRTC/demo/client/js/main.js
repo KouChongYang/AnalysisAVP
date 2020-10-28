@@ -3,7 +3,8 @@
 "use strict";
 
 // 服务器地址
-const ServerWebsocket = "ws://127.0.0.1:8099";
+const ServerWebsocket = "wss://www.gongluck.icu:8098/ws";
+const Coturn = "www.gongluck.icu:3478";
 
 // 信令
 const SIGNAL_TYPE_JOIN = "join";
@@ -33,10 +34,30 @@ var LocalStream = null;
 // peerconnection
 var peerconn = null;
 
+// ice服务配置
+var defaultConfiguration = {
+  bundlePolicy: "max-bundle",
+  rtcpMuxPolicy: "require",
+  iceTransportPolicy: "all", //relay all
+  iceServers: [
+    {
+      urls: [
+        "turn:"+Coturn+"?transport=udp",
+        "turn:"+Coturn+"?transport=tcp", // 可以插入多个进行备选
+      ],
+      username: "gongluck",
+      credential: "123456",
+    },
+    {
+      urls: ["stun:"+Coturn+""],
+    },
+  ],
+};
+
 // RTCEngine类
 var RTCEngine = function (wsurl) {
   // 创建websocket连接
-  this.ws = new WebSocket(wsurl); 
+  this.ws = new WebSocket(wsurl);
   // websocket连接建立时触发
   this.ws.onopen = function () {
     console.info("websocket open");
@@ -95,6 +116,10 @@ function handleResponseJoin(message) {
 function handleRemotePeerLeave(message) {
   console.info("other leave, remote : " + message.uid);
   RemoteVideo.srcObject = null;
+  if (peerconn != null) {
+    peerconn.close();
+    peerconn = null;
+  }
 }
 
 // 获取到对方码流的对象句柄
@@ -127,7 +152,7 @@ function handleRemoteNewPeer(message) {
 
   if (peerconn == null) {
     // 创建RTC连接
-    peerconn = new RTCPeerConnection(null);
+    peerconn = new RTCPeerConnection(defaultConfiguration);
     peerconn.onicecandidate = iceCandidate;
     peerconn.ontrack = track;
     // 将本地流加入到RTC连接
@@ -168,7 +193,7 @@ function handleRemoteNewPeer(message) {
 function handleRemoteOffer(message) {
   if (peerconn == null) {
     // 创建RTC连接
-    peerconn = new RTCPeerConnection(null);
+    peerconn = new RTCPeerConnection(defaultConfiguration);
     peerconn.onicecandidate = iceCandidate;
     peerconn.ontrack = track;
     // 将本地流加入到RTC连接
@@ -222,32 +247,6 @@ function handleRemoteCandidate(message) {
   });
 }
 
-// 设置本地窗口的流
-function openLocalStream(stream) {
-  var jsonMsg = {
-    cmd: SIGNAL_TYPE_JOIN,
-    roomid: RoomID,
-    uid: LocalID,
-  };
-  var message = JSON.stringify(jsonMsg);
-  rtcEngine.ws.send(message);
-  LocalVideo.srcObject = stream;
-  LocalStream = stream;
-}
-
-// 初始化本地流
-function initLocalStream() {
-  navigator.mediaDevices
-    .getUserMedia({
-      audio: true,
-      video: true,
-    })
-    .then(openLocalStream)
-    .catch(function (e) {
-      alert("getUserMedia error : " + e.name);
-    });
-}
-
 // “加入”控件点击事件
 document.getElementById("JoinBtn").onclick = function () {
   console.info("加入按钮被点击");
@@ -256,7 +255,26 @@ document.getElementById("JoinBtn").onclick = function () {
     alert("请输入房间ID");
     return;
   }
-  initLocalStream();
+  // 初始化本地流
+  navigator.mediaDevices
+    .getUserMedia({
+      audio: true,
+      video: true,
+    })
+    .then(function (stream) {
+      var jsonMsg = {
+        cmd: SIGNAL_TYPE_JOIN,
+        roomid: RoomID,
+        uid: LocalID,
+      };
+      var message = JSON.stringify(jsonMsg);
+      rtcEngine.ws.send(message);
+      LocalVideo.srcObject = stream;
+      LocalStream = stream;
+    })
+    .catch(function (e) {
+      alert("getUserMedia error : " + e.name);
+    });
 };
 
 // “离开”控件点击事件
@@ -269,6 +287,13 @@ document.getElementById("LeaveBtn").onclick = function () {
   };
   var message = JSON.stringify(jsonMsg);
   rtcEngine.ws.send(message);
+
+  LocalVideo.srcObject = null;
+  RemoteVideo.srcObject = null;
+  if (peerconn != null) {
+    peerconn.close();
+    peerconn = null;
+  }
 };
 
 // 启动服务
