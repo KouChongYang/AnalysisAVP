@@ -417,6 +417,27 @@ Analysis of audio and video protocols
         make install
         ```
 
+- 推流命令
+
+    ```shell
+# h264推流
+    ffmpeg -re -i gx.flv -vcodec h264 -acodec aac -f rtsp -rtsp_transport tcp rtsp://127.0.0.1/live/test
+    # h265推流
+    ffmpeg -re -i gx.flv -vcodec hevc -acodec aac -f rtsp -rtsp_transport tcp rtsp://127.0.0.1/live/test
+    # copy
+    ffmpeg -re -i gx.flv -vcodec copy -acodec copy -f flv -y rtmp://127.0.0.1/live/test
+```
+    
+- 拉流命令
+
+    ```shell
+    ffplay rtmp://127.0.0.1/live/test
+    ffplay http://127.0.0.1/live/test.m3u8
+    ffplay rtsp://127.0.0.1/live/test
+    ```
+
+    
+
 - 数据结构
 
     - AVFormatContext
@@ -898,43 +919,53 @@ Analysis of audio and video protocols
 
 ## SRS
 
-- SRS源码获取
+- 编译SRS
 
     ```shell
+    # SRS源码获取
     git clone https://gitee.com/winlinvip/srs.oschina.git srs
     cd srs/trunk
     git remote set-url origin https://github.com/ossrs/srs.git
     git pull
-    ```
-
-- SRS编译
-
-    ```shell
+    # 编译
     ./configure
     make
-    ```
-
-- 启动SRS服务
-
-    ```shell
+    # 运行
     ./objs/srs -c conf/rtmp.conf
     ./objs/srs -c conf/hls.conf
     ```
 
-- 测试SRS服务
-  
-    - 推流
 
-        ```shell
-        ffmpeg -re -i gx.flv -vcodec copy -acodec copy -f flv -y rtmp://127.0.0.1/live/test
-        ```
+## ZLMediaKit
 
-    - 拉流
+- 编译ZLMediaKit
 
-        ```shell
-        ffplay rtmp://127.0.0.1/live/test
-        ffplay http://127.0.0.1/live/test.m3u8
-        ```
+    ```shell
+    # 下载源码
+    git clone --depth 1 https://gitee.com/xia-chu/ZLMediaKit
+    cd ZLMediaKit
+    # 千万不要忘记执行这句命令
+    git submodule update --init
+    # 安装依赖库
+    sudo apt-get install libssl-dev -y
+    sudo apt-get install libsdl-dev -y
+    sudo apt-get install libavcodec-dev -y
+    sudo apt-get install libavutil-dev -y
+    sudo apt-get install ffmpeg -y
+    # 编译
+    mkdir build
+    cd build
+    cmake ..
+    make -j 8
+    # 运行
+    cd ../release/linux/Debug
+    #通过-h可以了解启动参数
+    ./MediaServer -h
+    #以守护进程模式启动
+    sudo ./MediaServer -d &
+    ```
+
+    
 
 ## WebRTC
 
