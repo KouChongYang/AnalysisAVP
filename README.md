@@ -1772,7 +1772,7 @@ Analysis of audio and video protocols
              * Audio only. Number of samples to skip after a discontinuity.
              */
             int seek_preroll;
-        } 
+        }
         ```
 
         - codec_type：媒体类型，比如AVMEDIA_TYPE_VIDEO、AVMEDIA_TYPE_AUDIO等；
@@ -3788,26 +3788,25 @@ Analysis of audio and video protocols
 
     - AVCodecParser
       
-    ```C++
-    typedef struct AVCodecParser {
-            int codec_ids[5]; /* several codec IDs are permitted */
-            int priv_data_size;
-            int (*parser_init)(AVCodecParserContext *s);
-            /* This callback never returns an error, a negative value means that
-             * the frame start was in a previous packet. */
-            int (*parser_parse)(AVCodecParserContext *s,
-                                AVCodecContext *avctx,
-                                const uint8_t **poutbuf, int *poutbuf_size,
-                                const uint8_t *buf, int buf_size);
-            void (*parser_close)(AVCodecParserContext *s);
-            int (*split)(AVCodecContext *avctx, const uint8_t *buf, int buf_size);
-            struct AVCodecParser *next;
-        } AVCodecParser;
-    ```
-    
-        - ⽤于解析输⼊的数据流并把它分成⼀帧⼀帧的压缩编码数据。⽐较形象
+      - ⽤于解析输⼊的数据流并把它分成⼀帧⼀帧的压缩编码数据。⽐较形象
         的说法就是把⻓⻓的⼀段连续的数据“切割”成⼀段段的数据；
-    
+      
+      ```C++
+      typedef struct AVCodecParser {
+              int codec_ids[5]; /* several codec IDs are permitted */
+              int priv_data_size;
+              int (*parser_init)(AVCodecParserContext *s);
+              /* This callback never returns an error, a negative value means that
+               * the frame start was in a previous packet. */
+              int (*parser_parse)(AVCodecParserContext *s,
+                                  AVCodecContext *avctx,
+                                  const uint8_t **poutbuf, int *poutbuf_size,
+                                  const uint8_t *buf, int buf_size);
+              void (*parser_close)(AVCodecParserContext *s);
+              int (*split)(AVCodecContext *avctx, const uint8_t *buf, int buf_size);
+              struct AVCodecParser *next;
+          } AVCodecParser;
+      ```
     - AVPacket
 
         ```C++
@@ -6074,61 +6073,58 @@ Analysis of audio and video protocols
             void *userdata;             /**< Userdata passed to callback (ignored for NULL callbacks). */
         } SDL_AudioSpec;
         
-        ```
-    
-    /**
-         *  This function opens the audio device with the desired parameters, and
-     *  returns 0 if successful, placing the actual hardware parameters in the
-         *  structure pointed to by \c obtained.  If \c obtained is NULL, the audio
-         *  data passed to the callback function will be guaranteed to be in the
-         *  requested format, and will be automatically converted to the hardware
-         *  audio format if necessary.  This function returns -1 if it failed
-         *  to open the audio device, or couldn't set up the audio thread.
-         *
-         *  When filling in the desired audio spec structure,
-         *    - \c desired->freq should be the desired audio frequency in samples-per-
-         *      second.
-         *    - \c desired->format should be the desired audio format.
-         *    - \c desired->samples is the desired size of the audio buffer, in
-         *      samples.  This number should be a power of two, and may be adjusted by
-         *      the audio driver to a value more suitable for the hardware.  Good values
-         *      seem to range between 512 and 8096 inclusive, depending on the
-         *      application and CPU speed.  Smaller values yield faster response time,
-         *      but can lead to underflow if the application is doing heavy processing
-         *      and cannot fill the audio buffer in time.  A stereo sample consists of
-         *      both right and left channels in LR ordering.
-         *      Note that the number of samples is directly related to time by the
-         *      following formula:  \code ms = (samples*1000)/freq \endcode
-         *    - \c desired->size is the size in bytes of the audio buffer, and is
-         *      calculated by SDL_OpenAudio().
-         *    - \c desired->silence is the value used to set the buffer to silence,
-         *      and is calculated by SDL_OpenAudio().
-         *    - \c desired->callback should be set to a function that will be called
-         *      when the audio device is ready for more data.  It is passed a pointer
-         *      to the audio buffer, and the length in bytes of the audio buffer.
-         *      This function usually runs in a separate thread, and so you should
-         *      protect data structures that it accesses by calling SDL_LockAudio()
-         *      and SDL_UnlockAudio() in your code. Alternately, you may pass a NULL
-         *      pointer here, and call SDL_QueueAudio() with some frequency, to queue
-         *      more audio samples to be played (or for capture devices, call
-         *      SDL_DequeueAudio() with some frequency, to obtain audio samples).
-         *    - \c desired->userdata is passed as the first parameter to your callback
-         *      function. If you passed a NULL callback, this value is ignored.
-         *
-         *  The audio device starts out playing silence when it's opened, and should
-         *  be enabled for playing by calling \c SDL_PauseAudio(0) when you are ready
-         *  for your audio callback function to be called.  Since the audio driver
-         *  may modify the requested size of the audio buffer, you should allocate
-         *  any local mixing buffers after you open the audio device.
-         */
-        extern DECLSPEC int SDLCALL SDL_OpenAudio(SDL_AudioSpec * desired,
-                                                  SDL_AudioSpec * obtained);
-        ```
+        /**
+          *  This function opens the audio device with the desired parameters, and
         
+          *  returns 0 if successful, placing the actual hardware parameters in the
+          *  structure pointed to by \c obtained.  If \c obtained is NULL, the audio
+          *  data passed to the callback function will be guaranteed to be in the
+          *  requested format, and will be automatically converted to the hardware
+          *  audio format if necessary.  This function returns -1 if it failed
+          *  to open the audio device, or couldn't set up the audio thread.
+          *
+          *  When filling in the desired audio spec structure,
+          *  - \c desired->freq should be the desired audio frequency in samples-per-   
+          *  second.
+          *  - \c desired->format should be the desired audio format.
+          *  - \c desired->samples is the desired size of the audio buffer, in
+          *  samples.  This number should be a power of two, and may be adjusted by
+          *  the audio driver to a value more suitable for the hardware.  Good values
+          *  seem to range between 512 and 8096 inclusive, depending on the
+          *  application and CPU speed.  Smaller values yield faster response time,
+          *  but can lead to underflow if the application is doing heavy processing
+          *  and cannot fill the audio buffer in time.  A stereo sample consists of
+          *  both right and left channels in LR ordering.
+          *  Note that the number of samples is directly related to time by the
+          *  following formula:  \code ms = (samples*1000)/freq \endcode
+          *  - \c desired->size is the size in bytes of the audio buffer, and is
+          *  calculated by SDL_OpenAudio().
+          *  - \c desired->silence is the value used to set the buffer to silence,
+          *  and is calculated by SDL_OpenAudio().
+          *  - \c desired->callback should be set to a function that will be called
+          *  when the audio device is ready for more data.  It is passed a pointer
+          *  to the audio buffer, and the length in bytes of the audio buffer.
+          *  This function usually runs in a separate thread, and so you should
+          *  protect data structures that it accesses by calling SDL_LockAudio()
+          *  and SDL_UnlockAudio() in your code. Alternately, you may pass a NULL
+          *  pointer here, and call SDL_QueueAudio() with some frequency, to queue
+          *  more audio samples to be played (or for capture devices, call
+          *  SDL_DequeueAudio() with some frequency, to obtain audio samples).
+          *  - \c desired->userdata is passed as the first parameter to your callback
+          *  function. If you passed a NULL callback, this value is ignored.
+          *
+          *  The audio device starts out playing silence when it's opened, and should
+          *  be enabled for playing by calling \c SDL_PauseAudio(0) when you are ready
+          *  for your audio callback function to be called.  Since the audio driver
+          *  may modify the requested size of the audio buffer, you should allocate
+          *  any local mixing buffers after you open the audio device.
+          */
+        extern DECLSPEC int SDLCALL SDL_OpenAudio(SDL_AudioSpec * desired,
+                                                      SDL_AudioSpec * obtained);
         ```
-    
+
     - SDL_AudioCallback；
-    
+
         ```C++
         /**
          *  This function is called when the audio device needs more data.
@@ -6147,9 +6143,9 @@ Analysis of audio and video protocols
         typedef void (SDLCALL * SDL_AudioCallback) (void *userdata, Uint8 * stream,
                                                     int len);
         ```
-    
+
     - 播放音频数据；
-    
+
         ```C++
         /**
          *  \name Pause audio functions
@@ -6332,6 +6328,22 @@ Analysis of audio and video protocols
         include /code/AnalysisAVP/example/WebRTC/demo/client/webrtc-websocket-proxy.conf;
         ```
     
+
+### nodejs
+
+- 安装nodejs
+
+  ```shell
+  # 下载
+  wget https://nodejs.org/dist/v15.0.0/node-v15.0.0-linux-x64.tar.xz
+  # 解压
+  tar -xvf node-v15.0.0-linux-x64.tar.xz
+  # 进入目录
+  cd node-v15.0.0-linux-x64
+  # 执行软连接
+  sudo ln ‐s /mnt/e/ubuntu/node-v15.0.0-linux-x64/bin/npm /usr/local/bin/
+  sudo ln ‐s /mnt/e/ubuntu/node-v15.0.0-linux-x64/bin/node /usr/local/bin/
+  ```
 
 ## 流媒体协议
 
@@ -6632,19 +6644,3 @@ Analysis of audio and video protocols
         
         - 在一对一通话场景中，每个 Peer均创建有一个 PeerConnection 对象，由一方主动发 Offer SDP，另一方则应答AnswerSDP，最后双方交换 ICE Candidate 从而完成通话链路的建立。但是在中国的网络环境中，据一些统计数据显示，至少1半的网络是无法直接穿透打通，这种情况下只能借助TURN服务器中转。
 
-- 安装node.js
-
-    ```shell
-    # 下载
-    wget https://nodejs.org/dist/v15.0.0/node-v15.0.0-linux-x64.tar.xz
-    # 解压
-    tar -xvf node-v15.0.0-linux-x64.tar.xz
-    # 进入目录
-    cd node-v15.0.0-linux-x64
-    # 执行软连接
-    sudo ln ‐s /mnt/e/ubuntu/node-v15.0.0-linux-x64/bin/npm /usr/local/bin/
-    sudo ln ‐s /mnt/e/ubuntu/node-v15.0.0-linux-x64/bin/node /usr/local/bin/
-    ```
-
-
-  
