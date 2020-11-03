@@ -1,8 +1,8 @@
 ﻿/*
- * @Author: gongluck
- * @Date: 2020-08-24 20:40:16
- * @Last Modified by:   gongluck
- * @Last Modified time: 2020-08-24 20:40:16
+ * @Author: gongluck 
+ * @Date: 2020-11-02 23:12:27 
+ * @Last Modified by:   gongluck 
+ * @Last Modified time: 2020-11-02 23:12:27 
  */
 
 #include "aac.h"
@@ -11,11 +11,12 @@
 #include <iomanip>
 #include <fstream>
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	std::cout << "aac analysis" << std::endl;
 
-	std::cout << "Usage : " << "aac aacfile." << std::endl;
+	std::cout << "Usage : "
+			  << "aac aacfile." << std::endl;
 
 	if (argc < 2)
 	{
@@ -29,9 +30,9 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	ADTS adts = { 0 };
+	ADTS adts = {0};
 	uint16_t framelength = 0;
-	while (in.read(reinterpret_cast<char*>(&adts), sizeof(adts)))
+	while (in.read(reinterpret_cast<char *>(&adts), sizeof(adts)))
 	{
 		framelength = get_aac_frame_length(adts);
 		std::cout << std::string(50, '*').c_str() << std::endl;

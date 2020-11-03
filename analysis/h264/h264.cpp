@@ -1,29 +1,30 @@
 ﻿/*
- * @Author: gongluck
- * @Date: 2020-08-24 19:50:32
- * @Last Modified by:   gongluck
- * @Last Modified time: 2020-08-24 19:50:32
+ * @Author: gongluck 
+ * @Date: 2020-11-02 17:08:06 
+ * @Last Modified by: gongluck
+ * @Last Modified time: 2020-11-02 17:08:39
  */
+
 #include "h264.h"
 
-const char* nal_parse_idc(uint8_t idc)
+const char *nal_parse_idc(uint8_t idc)
 {
 	switch (idc)
 	{
 	case NAL_REF_IDC_PRIORITY_HIGHEST:
 		return "HIGHEST";
-	case  NAL_REF_IDC_PRIORITY_HIGH:
+	case NAL_REF_IDC_PRIORITY_HIGH:
 		return "HEIGHT";
-	case  NAL_REF_IDC_PRIORITY_LOW:
+	case NAL_REF_IDC_PRIORITY_LOW:
 		return "LOW";
-	case  NAL_REF_IDC_PRIORITY_DISPOSABLE:
+	case NAL_REF_IDC_PRIORITY_DISPOSABLE:
 		return "DISPOSABLE";
 	default:
 		return "UNKNOWN";
 	}
 }
 
-const char* nal_parse_type(uint8_t type)
+const char *nal_parse_type(uint8_t type)
 {
 	switch (type)
 	{
@@ -62,14 +63,14 @@ const char* nal_parse_type(uint8_t type)
 	}
 }
 
-std::ostream& operator<<(std::ostream& os, const NALHEADER& nalheader)
+std::ostream &operator<<(std::ostream &os, const NALHEADER &nalheader)
 {
 	os << "nal_ref_idc : " << nal_parse_idc(nalheader.nal_ref_idc)
-		<< "\nnal_unit_type : " << nal_parse_type(nalheader.nal_unit_type);
+	   << "\nnal_unit_type : " << nal_parse_type(nalheader.nal_unit_type);
 	return os;
 }
 
-int32_t findnalu(uint8_t* data, uint32_t start, uint32_t end, int8_t* nalstep)
+int32_t findnalu(uint8_t *data, uint32_t start, uint32_t end, int8_t *nalstep)
 {
 	if (start >= end)
 	{
@@ -77,7 +78,7 @@ int32_t findnalu(uint8_t* data, uint32_t start, uint32_t end, int8_t* nalstep)
 	}
 
 	uint32_t i = start;
-	int step = 0;//记录0x00的个数
+	int step = 0; //记录0x00的个数
 	*nalstep = 0;
 
 	while (i++ < end)
